@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>流量統計表</title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+	
+	<link rel="stylesheet" href="/stylesheets/common.css">
+	<style>
+	th{
+		cursor: pointer;
+	}
+	/*
+	th, td:nth-child(2),td:nth-child(6),td:nth-child(7),td:nth-child(8){
+		word-break: keep-all;
+	}
+	td:nth-child(4), td:nth-child(7){
+		word-break: break-all;
+	}
+	td:nth-child(2), td:nth-child(3),td:nth-child(6),td:nth-child(7){
+		text-align: left;
+	}
+	td:nth-child(3){
+		width:120px;
+		max-width:120px;
+		word-break: break-all;
+	}*/
+	a{
+		margin: 6px;
+	}
+	
+	#table_container table{
+		width:260px;
+	}
+	
+	.line_blue {
+		fill: none;
+		stroke: steelblue;
+		stroke-width: 2px;
+	}
+	.line_purple {
+		fill: none;
+		stroke: #DA70D6;
+		stroke-width: 2px;
+	}
+	.search-result-wrap {
+		margin-bottom: 10px;
+	}
+	
+	#tooltip{
+        position:absolute;
+        border:1px solid #333;
+        background:#f7f5d1;
+        padding:3px;
+        color:#333;
+        display:none;
+        z-index:10010;
+        min-width:220px; 
+		word-break:keep-all;
+	}
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<a href="/">Line對話表</a>
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'>流量統計表</span>
+				(by hour 紫色:line 藍色:fb)
+				<button onclick="$('#table_container').toggle();">Raw Data</button>
+			</div>
+			<div class="form-row" style=''>
+				<label for="">
+					<span class="block-label">起日</span>
+					<input type="text" id='from_time' class="input-date">
+				</label>
+				<div class="forward-mark"></div>
+				<label for="">
+					<span class="block-label">迄日</span>
+					<input type="text" id='till_time' class="input-date">
+				</label>
+			</div>
+			<div class="form-row" style=''>
+				<font style='font-size:1.5em;'>資料時間戳:<script>document.write(new Date(new Date().getTime()+8*3600*1000).toISOString().replace("T"," ").split(".")[0]);</script></font>
+			</div>
+			<div class="form-row">	
+			</div>
+		</div><!-- /.form-wrap -->
+	</div><!-- /.input-field-wrap -->
+
+	<div class="search-result-wrap" >
+		<div class="result-table-func-wrap" style="display:none;" >
+			<div class="result-item-display">
+				顯示
+				<select name="" id="select">
+					<option value="10">10</option>
+					<option value="20">20</option>
+					<option value="50">50</option>
+					<option value="100">100</option>
+					<!--option value="500">500</option-->
+					<option value="1000">1000</option>
+					<!--option value="-1">所有</option-->
+				</select> 項結果
+			</div><!-- /.result-item-display -->
+			<div class="result-item-search">
+				<button id='last_page' class='my-button' onclick='page=page-1;fetch_and_draw();'>◀上一頁</button>
+				<span id='page_number' style='margin:0px 10px;'>1</span>
+				<button id='next_page' class='my-button' onclick='page=page+1;fetch_and_draw();'>下一頁▶</button>
+			</div><!-- /.result-item-search -->
+		</div><!-- /.result-table-func-wrap -->
+		<div id="chart_container" style="text-align:center;"></div>
+		<div id="statistic_div" style="text-align:center;"></div>
+		<div id="table_container" style="text-align:center;display:none;"></div>
+		
+	</div><!-- /.search-result-wrap -->
+</div><!-- /.page-wrapper -->
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+<script type="text/javascript" src="/javascripts/d3.v4.min.js"></script>
+<!--script src="https://d3js.org/d3.v4.min.js"></script-->
+<!--script src="https://d3js.org/d3.v3.min.js"></script-->
+<script type="text/javascript" src="/javascripts/common.js"></script>
+<script>
+var line_prod_data = null;
+var fb_prod_data = null;
+
+function interaction_count(){
+	let query_line_view_para = {
+		db_name : "line_prod_cloudantDB",
+		table_name : "taipei_digital_after_watson",
+		view_name : "interaction_distinct_people"
+	};
+	
+	query_view(query_line_view_para,function(result){
+		console.log(result);
+		let day_dict = {}
+		let total_times=0;
+		let total_people_list = [];
+		let total_people_dict = {};
+		let total_people_dict_count = 0;
+		
+		for(let i=0;i<result.length;i++){
+			if(total_people_dict[result[i].key[0]]==null){
+				total_people_dict[result[i].key[0]]="";
+				total_people_dict_count++;
+			}
+			/*if(total_people_list.indexOf(result[i].key[0])==-1){
+				total_people_list.push(result[i].key[0]);
+			}*/
+			if(day_dict[result[i].key[1]]==null){
+				day_dict[result[i].key[1]]={
+					peoples:0,
+					interactions:0
+				}
+			}
+			day_dict[result[i].key[1]].peoples++;
+			day_dict[result[i].key[1]].interactions+=result[i].value;
+			total_times+=result[i].value;
+		}
+		
+		let table_str= "";
+		let keys = Object.keys(day_dict);
+		keys.sort();
+		table_str+="<table class='result-table' style='width:240px;'>"
+				+"<caption>互動人數人次</caption>"
+				+"<tr><th>日期</th><th>人數</th><th>人次</th></tr>";
+		for(let i=0;i<keys.length;i++){
+			table_str+="<tr><td>"+keys[i]+"</td><td>"+day_dict[keys[i]].peoples+"</td><td>"+day_dict[keys[i]].interactions+"</td></tr>"
+		}
+		table_str+="<tr style='border-top:3px solid #111'><td>活動期間</td><td>"+total_people_dict_count+"</td><td>"+total_times+"</td></tr>"
+		table_str+="</table>";
+		//$("#statistic_div").append(table_str);
+		$("#chart_container").append(table_str);
+		
+	});
+}
+
+
+function draw_it(){
+	let data1 = line_prod_data;
+	let data2 = fb_prod_data;
+	
+	if(line_prod_data!=null && fb_prod_data!=null){
+		//let from_time = $("#from_time").val().replace(/\//g,"-");
+		let from_time = new Date($("#from_time").val());
+		let till_time = new Date($("#till_time").val());
+		till_time.setDate(new Date(till_time).getDate()+1);
+		//let till_time = $("#till_time").val().replace(/\//g,"-");
+		
+		if( !isNaN(from_time)&& !isNaN(till_time)){
+			data1 = data1.filter(function(item){
+				let time = item.key;
+				if( from_time.getTime() <= time && till_time.getTime() > time ){return true;}
+			});
+			data2 = data2.filter(function(item){
+				let time = item.key;
+				if( from_time.getTime() <= time && till_time.getTime() > time ){return true;}
+			});
+		}else if(!isNaN(from_time) || !isNaN(till_time)){
+			warningMsg("提示","日期請填寫完整");
+			return ;
+		}
+		let data1_total = data1.reduce(function(sum,item){
+			return sum + item.value;
+		},0);
+		let data2_total = data2.reduce(function(sum,item){
+			return sum + item.value;
+		},0);
+		let filled_data_1 = fill_it(data1);
+		let filled_data_2 = fill_it(data2);
+		$("#table_container").empty();
+		$("#table_container").append(
+			"<div style='float:left;margin:5px;'>LINE:(總數:"+data1_total+")"
+				+plain_table(filled_data_1.map(function(item){
+					return {"時間":formatDayStr(item.key),"數量":item.value};
+				}),"LINE資料")
+			+"</div>");
+			
+		$("#table_container").append(
+			"<div style='float:left;margin:5px;'>BOT後的FB:(總數:"+data2_total+")"
+				+plain_table(filled_data_2.map(function(item){
+					return {"時間":formatDayStr(item.key),"數量":item.value};
+				}),"FB資料")
+			+"</div>");
+		draw_line_chart(filled_data_1,filled_data_2);
+
+	}else{
+		warningMsg("提示","資料還沒準備好");
+	}
+}
+
+function fetch_data(){
+	
+	let query_line_view_para = {
+		db_name : "line_prod_cloudantDB",
+		table_name : "taipei_digital_after_watson",
+		view_name : "getFlows"
+	};
+	query_view( query_line_view_para, function(jsonData){
+		line_prod_data = jsonData;
+		if(fb_prod_data)draw_it();
+	});
+	
+	let query_fb_view_para = {
+		db_name : "fb_prod_cloudantDB",
+		table_name : "music_watson",
+		view_name : "getFlows"
+	};
+	query_view( query_fb_view_para, function(jsonData2){
+		fb_prod_data = jsonData2;
+		if(line_prod_data)draw_it();
+	});
+	
+}
+
+function formatDayStr(timestamp){
+	return new Date(timestamp+8*3600*1000).toISOString().replace("T"," ").split(".")[0];
+}
+
+function fill_it(jsonData){
+	let filled_data = [];
+	let timestamp = 0;
+	
+	for(let i=0;i<jsonData.length;i++){
+		
+		if(i==0){
+			timestamp = jsonData[i].key;
+		}else{
+			while(timestamp<jsonData[i].key){
+				filled_data.push({
+					"key":timestamp,
+					"value":0,
+					"time":formatDayStr(timestamp)
+				});
+				timestamp += 60*60*1000;
+			}
+		}
+		
+		filled_data.push({
+			"key":jsonData[i].key,
+			"value":jsonData[i].value,
+			"time":formatDayStr(jsonData[i].key)
+		});
+
+		timestamp += 60*60*1000;
+	}
+	console.log(filled_data);
+	return filled_data;
+}
+$(function(){
+	$(".input-date").datepicker("setDate", new Date());
+	fetch_data();
+	
+	$(".input-date").change(function(e){
+		draw_it();
+	});
+	interaction_count();
+});
+function draw_line_chart(jsonDataLine,jsonDataFB){
+	$("#chart_container").empty();
+	var margin = {top: 20, right: 20, bottom: 60, left: 50},
+    width = 960 - margin.left - margin.right,
+    height = 460 - margin.top - margin.bottom;
+
+	// parse the date / time
+	var parseTime = d3.timeParse("%Y-%m-%d %H:%M:%S");
+
+	// set the ranges
+	var x = d3.scaleTime().range([0, width]);
+	var y = d3.scaleLinear().range([height, 0]);
+
+	// define the line
+	var valueline = d3.line()
+		.x(function(d) { return x(d.time); })
+		.y(function(d) { return y(d.value); })
+		.curve(d3.curveCardinal);
+
+	// append the svg obgect to the body of the page
+	// appends a 'group' element to 'svg'
+	// moves the 'group' element to the top left margin
+	var svg = d3.select("#chart_container").append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+	  .append("g")
+		.attr("transform",
+			  "translate(" + margin.left + "," + margin.top + ")");
+
+	// format the data
+	jsonDataLine.forEach(function(d) {
+	  d.time = parseTime(d.time);
+	  d.value = +d.value;
+	});
+	jsonDataFB.forEach(function(d) {
+	  d.time = parseTime(d.time);
+	  d.value = +d.value;
+	});
+
+	// Scale the range of the data
+	
+	x.domain(d3.extent(jsonDataLine.concat(jsonDataFB), function(d) { return d.time; }));
+	y.domain([0, d3.max(jsonDataLine.concat(jsonDataFB), function(d) { return d.value; })]);
+
+	// Add the valueline path.
+	svg.append("path")
+	  .data([jsonDataLine])
+	  .attr("class", "line_blue")
+	  .attr("d", valueline);
+	  
+	svg.append("path")
+	  .data([jsonDataFB])
+	  .attr("class", "line_purple")
+	  .attr("d", valueline);
+	  
+	let biggest_day = jsonDataLine.concat(jsonDataFB).reduce(function(time,item){
+		return item.key > time?item.key:time;
+	},0);
+	let smallest_day = jsonDataLine.concat(jsonDataFB).reduce(function(time,item){
+		return item.key < time?item.key:time;
+	},10000000000000);
+	let xAxis_scale;
+	if(biggest_day-smallest_day < 24*60*60*1000){
+		xAxis_scale = d3.axisBottom(x).ticks(12).tickFormat(d3.timeFormat("%m/%d %H時"))
+	}else if(biggest_day-smallest_day > 7*24*60*60*1000){
+		xAxis_scale = d3.axisBottom(x).ticks(12).tickFormat(d3.timeFormat("%Y-%m-%d"))
+	}else{
+		xAxis_scale = d3.axisBottom(x).tickFormat(d3.timeFormat("%m/%d %H"))
+	}
+	svg.append("g")
+	  .attr("transform", "translate(0," + height + ")")
+	  .call(xAxis_scale)
+	  .selectAll("text")	
+		.style("text-anchor", "end")
+		.attr("dx", "-.8em")
+		.attr("dy", ".15em")
+		.attr("transform", "rotate(-35)");
+	  //.call(xAxis);
+	  
+	// Add the Y Axis
+	svg.append("g")
+	  .call(d3.axisLeft(y));
+	svg.append("g").selectAll("circle")
+		.data(jsonDataLine)
+		.enter()
+		.append("circle")
+		.attr("cx",function(d) {return x(d.time);})
+		.attr("cy",function(d) {return y(d.value);})
+		.attr("r" , 6)
+		.attr("fill", "rgba(238,102,0,0.2)")
+		.attr("newtitle" , function(data){
+			return "平台: LINE<br>"
+					+"時間: "+formatDayStr(data.key)+"<br>"
+					+ "流量: "+data.value;
+		})
+		.attr("class","tips");
+		
+	svg.append("g").selectAll("circle")
+		.data(jsonDataFB)
+		.enter()
+		.append("circle")
+		.attr("cx",function(d) {return x(d.time);})
+		.attr("cy",function(d) {return y(d.value);})
+		.attr("r" , 6)
+		.attr("fill", "rgba(238,102,0,0.2)")
+		.attr("newtitle" , function(data){
+			return "平台: FB<br>"
+					+"時間: "+formatDayStr(data.key)+"<br>"
+					+ "流量: "+data.value;
+		})
+		.attr("class","tips")
+	  
+	/*svg.append("g").selectAll("rect")
+	  .data(jsonData)
+	  .enter().append("svg:rect")
+	  .attr("class","tips")
+	  .attr("newtitle", function(d) { return "hello"; })
+	  .attr("x", function(d) { return x(d.time)-20; })
+	  .attr("y", function(d) {return 0;})
+	  .attr("height", function(d) { return height;})
+	  .attr("width", function(d) { return 40; })
+	  .attr("fill",function(d) { return "rgba(0,0,0,0.2)" ;});*/
+	tooltip("tips");
+}
+
+function tooltip(clas){
+	
+	$("."+clas).css("z-index","2").mouseover(function(e){
+		//console.log($(this).attr("newtitle"));
+		//$(this).attr("newTitle",$(this).attr("title"));
+		//$(this).attr("title","");
+		var tooltip = "<div id='tooltip' style='padding:5px;'><div style:'margin:0 auto;'>"+ $(this).attr("newTitle") +"</div><\/div>";
+		$("body").append(tooltip);
+		$("#tooltip").css({"top": (e.pageY+20) + "px","left": (e.pageX+10)  + "px"}).show();//"fast");
+	 }).mouseout(function(){
+		 //$(this).attr("title",$(this).attr("newTitle"));
+	     $("#tooltip").remove();
+	 }).mousemove(function(e){
+		 if(e.pageX+420 > +window.innerWidth){
+			 $("#tooltip").css({"top": (e.pageY+20) + "px","left": (e.pageX-10-(240))  + "px"});
+		 }else{
+	     	$("#tooltip").css({"top": (e.pageY-20) + "px","left": (e.pageX+10)  + "px"});
+		 }
+	 });
+}
+</script>
+</body>
+</html>

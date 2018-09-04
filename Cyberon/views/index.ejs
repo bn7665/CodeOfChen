@@ -1,0 +1,33 @@
+<!DOCTYPE html> <html>
+  <head>
+    <title><%= title %></title>
+	<style>
+		p{
+			margin-left:60px;
+		}
+	</style>
+  </head>
+  
+  <body>
+    <h2><%= title %></h2>
+    <p><%= says %></p>
+	<p><a id='ex_1' href='#'>EXAMPLE_1. STT</a></p>
+	<p><a id='ex_2' href='#'>EXAMPLE_2. TTS</a></p>
+	
+  </body>
+  <script>
+  function b64EncodeUnicode(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode('0x' + p1);
+    }));
+  }
+	document.getElementById("ex_1").setAttribute("href",
+		window.location.origin+"/stt_service"
+		+"?type=url"
+		+"&audio_url="+btoa(window.location.origin+"/audio/example_1.mp4")
+	);
+	document.getElementById("ex_2").setAttribute("href",
+		window.location.origin+"/tts_service"
+		+"?text="+b64EncodeUnicode("吃葡萄不吐葡萄皮不吃葡萄倒吐葡萄皮，和尚端湯上塔湯灑塔滑湯燙塔").replace(/\+/g,"%2B")
+	)
+  </script> </html>

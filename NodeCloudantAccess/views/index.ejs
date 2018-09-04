@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title><%= title %></title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+
+	<style>
+	.my-title{
+		font-size: 30px;
+	}
+	.my-button{
+		padding: 3px 8px;
+	}
+	th{
+		cursor: pointer;
+	}
+	td:nth-child(4){
+		max-width:500px;
+	}
+	th, td:nth-child(1),td:nth-child(2),td:nth-child(3),td:nth-child(6),td:nth-child(7),td:nth-child(8),td:nth-child(9){
+		word-break: keep-all;
+	}
+	td:nth-child(1), td:nth-child(2),td:nth-child(6),td:nth-child(7),td:nth-child(8),,td:nth-child(9){
+		text-align: right;
+	}
+	#loading {
+		position: fixed;
+		background-color: rgba(128,128,128,0.5);
+		width: 100vw;
+		height: 100vh;
+		z-index: 100;
+		top:0px;
+		right:0px;
+	}
+	#loading div{
+		margin: auto;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		position: absolute;
+		width: 240px;
+		height: 24px;
+		border: 1px solid #888;
+		border-radius: 10px;
+		background: #fefefe;
+		font-size: 20px;
+		padding: 20px;
+		text-align: center;
+		box-sizing: content-box;
+		box-shadow: 3px 3px 20px rgba(0, 0, 0, 0.6);
+	}
+	.fake_thead{
+		vertical-align: bottom;
+		font-size: 24px;
+	}
+	.result-table-func-wrap{
+		text-align:center;
+	}
+	#index_table{
+		margin:20px 0 ;
+	}
+	#index_table td{
+		padding:5px;
+		text-align:center;
+	}
+	#index_table td img{
+		width:100px;
+	}
+	
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap" style="display:none;">
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'><%= title %></span>
+			</div>
+			<!--div class="form-row">
+				<label for="">
+					<span class="block-label">things</span>
+					<input type="text">
+				</label>
+				<a href="#" class="btn btn-darkblue">查詢</a>
+			</div-->
+			<div class="form-row">
+				<label for="">
+					<span class="block-label">起日</span>
+					<input type="text" id='from_time' class="input-date">
+				</label>
+				<div class="forward-mark"></div>
+				<label for="">
+					<span class="block-label">迄日</span>
+					<input type="text" id='till_time' class="input-date">
+				</label>
+			</div>
+			<div class="form-row">
+				<a href="#"  id='search_time' class="btn btn-darkblue btn-wide">查詢</a>
+			</div>
+			<div class="form-row">	
+			</div>
+		</div><!-- /.form-wrap -->
+	</div><!-- /.input-field-wrap -->
+	<div class="search-result-wrap" style="display:none;">
+	
+		<table id='index_table'>
+			<tr>
+				<td>
+					<a href='/?type=conversation'>
+						<img src="/images/conversation_icon.png"  />
+					</a>
+				</td>
+				<td>
+					<a href='/?type=call_manager'>
+						<img src="/images/call_manager_icon.png"  />
+					</a>
+				</td>
+				<td>
+					<a href='/?type=over_30'>
+						<img src="/images/over_30_icon.png"  />
+					</a>
+				</td>
+				<td>
+					<a href='/?type=send_picture'>
+						<img src="/images/send_picture_icon.png"  />
+					</a>
+				</td>
+				<td>
+					<a href='/statistic'>
+						<img src="/images/statistic_icon.png"  />
+					</a>
+				</td>
+			</tr>
+		</table>
+		<div style='text-align:center;margin-top:16px;' class="my-title"></div>
+		
+		<div class="result-table-func-wrap" >
+			<span class='fake_thead' id='data_amount'>共0筆</span>
+			<span class='fake_thead' id='data_focus'></span>
+			<div class="result-item-display" style='display:none;'>
+				顯示
+				<select name="" id="select">
+					<option value="10">10</option>
+					<option value="20">20</option>
+					<option value="100">100</option>
+					<option value="500">500</option>
+					<option value="1000">1000</option>
+					<!--option value="-1">所有</option-->
+				</select> 項結果
+			</div><!-- /.result-item-display -->
+			<div class="result-item-search">
+				<button id='last_page' class='my-button' onclick='page=page-1;fetch_and_draw();'>◀上一頁</button>
+				<span id='page_number' style='margin:0px 10px;'>1</span>
+				<button id='next_page' class='my-button' onclick='page=page+1;fetch_and_draw();'>下一頁▶</button>
+			</div><!-- /.result-item-search -->
+		</div><!-- /.result-table-func-wrap -->
+		<div id="table_container"></div>
+	</div><!-- /.search-result-wrap -->
+</div><!-- /.page-wrapper -->
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+
+<script>
+
+let limit = 10;
+let page = 0;
+let restrict_search = 1;
+let cloudant_query = JSON.parse('<%= query_template %>'.replace(/&#34;/g,'"'));
+/*
+{
+	"selector": {
+		"type": {
+			"$eq": "SendMessages"
+		}
+		//,"timestamp": {
+		//	"$gt": new Date($("#from_time").val()).getTime(),
+		//	"$lt": new Date($("#till_time").val()).getTime()
+		//},
+	},
+	sort: [{"timestamp": "desc"}],
+	//limit: 100,
+	//skip: 0
+};*/
+
+function fetch_and_draw(){
+
+	if(getUrlParameter("type")==null)return;
+	
+	cloudant_query.skip = page*limit ;
+	
+	$("#select").val(limit);
+	
+		//delete cloudant_query["selector"]["timestamp"];
+	
+	console.log(JSON.stringify(cloudant_query,null,1));
+	loading();
+	$.ajax({
+		type : "POST",
+		url : "/query_data",
+		cache : false,
+		data : {
+			table : "<%= table %>",
+			cloudant_query : JSON.stringify(cloudant_query),
+			raw_data : true
+		},
+		success: function(data) {
+			console.log(data);
+			let dest_plain_table = JSON.parse(data);
+			console.log(dest_plain_table[0])
+			
+			if(getUrlParameter("type")==null){
+				
+			}else if(getUrlParameter("type")=="call_manager"){
+				dest_plain_table = dest_plain_table.filter(function(item){
+					return item["特殊情況"].indexOf("小編")!=-1;
+				});
+			}else if(getUrlParameter("type")=="over_30"){
+				dest_plain_table = dest_plain_table.filter(function(item){
+					return item["特殊情況"].indexOf("30字")!=-1;
+				});
+			}else if(getUrlParameter("type")=="send_picture"){
+				dest_plain_table = dest_plain_table.filter(function(item){
+					return item["特殊情況"].indexOf("圖片")!=-1;
+				});
+			//}else if(getUrlParameter("type")=="statistic"){
+			//	$(".my-title").html("數據統計");
+			}	
+			
+			$("#data_amount").html(
+				(limit==-1?"共"+dest_plain_table.length+"筆":"")
+			);
+			console.log(dest_plain_table);
+			$("#data_focus").html(
+				(getUrlParameter("id") && dest_plain_table.length>0
+				?"(特定查詢:"+dest_plain_table[0]["名字"]+")<a style='font-size:0.5em;' href='"+location.pathname+"'>返回</a>"
+				:"")
+			);
+			
+			global_para = data;
+			global_para2 = dest_plain_table;
+			$("#page_number").html(1+page);
+			$("#last_page").prop('disabled', page==0 );
+			$("#next_page").prop('disabled', dest_plain_table.length!=limit );
+			
+			$("#table_container").html(sp_plain_table(dest_plain_table));
+			$(".search-result-wrap").show();
+			loading('over');
+		}
+		,error: function (jqXHR, textStatus, errorThrown) {
+	                	loading('get error: '+jqXHR.responseText);
+	                	warningMsg("錯誤","發生異常錯誤，請通知系統管理員。");
+	        		}
+	});
+}
+$(function(){
+	page = 0;
+	//fetch_and_draw();
+	if(getUrlParameter("type")==null){
+		//window.location.href = "https://www.facebook.com/TOYOTA.Taiwan/";
+		window.location.href = "./?type=conversation";
+	}else if(getUrlParameter("type")=="call_manager"){
+		$(".my-title").html("呼叫小編");
+	}else if(getUrlParameter("type")=="over_30"){
+		$(".my-title").html("多字留言");
+	}else if(getUrlParameter("type")=="send_picture"){
+		$(".my-title").html("傳送圖片");
+	}else if(getUrlParameter("type")=="statistic"){
+		$(".my-title").html("數據統計");
+	}
+	
+	cloudant_query = {
+		"selector": {
+			"type": {
+				"$eq": "SendMessages"
+			}
+			//,"timestamp": {
+			//	"$gt": new Date($("#from_time").val()).getTime(),
+			//	"$lt": new Date($("#till_time").val()).getTime()
+			//},
+		},
+		sort: [{"timestamp": "desc"}],
+		//limit: 100,
+		//skip: 0
+	};
+	
+	if(getUrlParameter("id")){
+		if(cloudant_query["selector"]["type"] && cloudant_query["selector"]["type"]["$eq"]=="SendMessages"){
+			id_posi="sender";
+		}else{
+			id_posi="target";
+		}
+		cloudant_query["selector"][id_posi]={
+			"$eq": getUrlParameter("id")
+		}
+		limit=100;
+		fetch_and_draw();
+	}else{
+		fetch_and_draw();
+		//$(".input-date").datepicker("setDate", new Date());
+	}
+	
+	$("#select").change(function() {
+		limit=+$(this).val();
+		page=0; 
+		fetch_and_draw();
+	});
+});
+
+
+function sp_plain_table(obj){
+	var html ="";
+	if(Array.isArray(obj)){
+		if(obj.length==0){
+			warningMsg("警告","無資料");
+		}else{
+			let obj_keys = Object.keys(obj[0])
+			html += "<table id='table' class='result-table'><thead><tr>";
+			for(let i=0; i<obj_keys.length; i++) {
+				if(["訊息字數","特殊情況","回覆"].indexOf(obj_keys[i])==-1){
+					html += '<th>' + obj_keys[i] + '</th>';
+				}
+			}
+			html += "</tr></thead><tbody>";
+			
+			for(let i=0; i<obj.length; i++) {
+				html += "<tr>";
+				for(let j=0; j<obj_keys.length; j++) {
+					if(["訊息字數","特殊情況","回覆"].indexOf(obj_keys[j])==-1){
+						html += '<td>' + (obj_keys[j]=="-"?i:obj[i][obj_keys[j]]) + '</td>';
+					}
+				}
+				html += "</tr>";
+			}
+			html += "</tbody></table>";
+		}	
+	}else{
+		warningMsg("警告","錯誤");
+	}
+	return html;
+
+}
+
+
+function warningMsg(title, msg) {
+	$("<div/>").html(msg).dialog({
+		title: title,
+		draggable : true, resizable : false, autoOpen : true,
+		height : "auto", width : "240", modal : true,
+		buttons : [{
+			text: "確定", 
+			click: function() { 
+				$(this).dialog("close");
+			}
+		}]
+	});
+}
+
+$(document).on('click','th',function(){
+    var table = $(this).parents('table').eq(0);
+    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
+    this.asc = !this.asc;
+    if (!this.asc){rows = rows.reverse();}
+    table.children('tbody').empty().html(rows);
+});
+function comparer(index) {
+    return function(a, b) {
+        var valA = getCellValue(a, index), valB = getCellValue(b, index);
+        return $.isNumeric(valA) && $.isNumeric(valB) ?
+            valA - valB : valA.localeCompare(valB);
+    };
+}
+function getCellValue(row, index){
+    return $(row).children('td').eq(index).text();
+}
+function loading(str){
+	if(!window.loading_count){
+		loading_count=0;
+	}
+	if(!window.loading_timeout){
+		loading_timeout=[];
+	}
+	
+	if($("#loading").length==0){
+		$("body").append('<div id="loading" style="display: none;padding:15px;"><div>資料讀取中，請稍後...</div></div>');
+	}
+	if(str!=null && str!="now"){
+		if(str!="over"){
+			console.log("loading_error:"+str);
+		}
+		loading_count--;
+		
+		clearTimeout(loading_timeout.shift());
+		
+		if(loading_count<=0){
+			loading_count = 0;
+			$("#loading").hide();
+		}
+	}else{
+		loading_count++;
+		if(str=="now"){
+			$("#loading").show();
+			loading_timeout.push (0);
+		}else{
+			loading_timeout.push ( 
+				setTimeout(function(){
+					$("#loading").show();
+				},200)
+			);
+		}
+	}
+}
+function getUrlParameter(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+
+</script>
+</body>
+</html>

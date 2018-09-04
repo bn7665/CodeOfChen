@@ -1,0 +1,1 @@
+nohup ./ngrok http -log stdout -log-level debug -log-format json 3000 >ngrok.out 2>&1 &

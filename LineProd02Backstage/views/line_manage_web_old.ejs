@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>離線版無時間Watson數據</title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+	<link rel="stylesheet" href="/stylesheets/common.css">
+	
+	<style>
+	.my-title{
+		font-size: 30px;
+	}
+	.my-button{
+		padding: 3px 8px;
+	}
+	th{
+		cursor: pointer;
+	}
+	td:nth-child(3), td:nth-child(7){
+		max-width:160px;
+	}
+	th, td:nth-child(2),td:nth-child(5),td:nth-child(6){
+		word-break: keep-all;
+	}
+	td:nth-child(2), td:nth-child(3),td:nth-child(5),td:nth-child(6){
+		text-align: left;
+	}
+	#loading {
+		position: fixed;
+		background-color: rgba(128,128,128,0.5);
+		width: 100vw;
+		height: 100vh;
+		z-index: 100;
+		top:0px;
+		right:0px;
+	}
+	#loading div{
+		margin: auto;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		position: absolute;
+		width: 240px;
+		height: 24px;
+		border: 1px solid #888;
+		border-radius: 10px;
+		background: #fefefe;
+		font-size: 20px;
+		padding: 20px;
+		text-align: center;
+		box-sizing: content-box;
+		box-shadow: 3px 3px 20px rgba(0, 0, 0, 0.6);
+	}
+	.fake_thead{
+		vertical-align: bottom;
+		font-size: 24px;
+	}
+	.result-table-func-wrap{
+		text-align:center;
+	}
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<a href="/">Line對話表</a>
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'>離線版無時間Watson數據</span>
+			</div>
+			<!--div class="form-row">
+				<label for="">
+					<span class="block-label">things</span>
+					<input type="text">
+				</label>
+				<a href="#" class="btn btn-darkblue">查詢</a>
+			</div-->
+			<div class="form-row" style='display:none;'>
+				<label for="">
+					<span class="block-label">起日</span>
+					<input type="text" id='from_time' class="input-date">
+				</label>
+				<div class="forward-mark"></div>
+				<label for="">
+					<span class="block-label">迄日</span>
+					<input type="text" id='till_time' class="input-date">
+				</label>
+			</div>
+			<div class="form-row" style='display:none;'>
+				<a href="#"  id='search_time' class="btn btn-darkblue btn-wide">查詢</a>
+			</div>
+			<div class="form-row">	
+			</div>
+		</div><!-- /.form-wrap -->
+	</div><!-- /.input-field-wrap -->
+
+	<div class="search-result-wrap" >
+		<div class="result-table-func-wrap" style="display:none;">
+			<span class='fake_thead' id='data_amount'>共0筆</span>
+			<span class='fake_thead' id='data_focus'></span>
+			<div class="result-item-display">
+				顯示
+				<select name="" id="select">
+					<option value="10">10</option>
+					<option value="20">20</option>
+					<option value="100">100</option>
+					<option value="500">500</option>
+					<option value="1000">1000</option>
+					<!--option value="-1">所有</option-->
+				</select> 項結果
+			</div><!-- /.result-item-display -->
+			<div class="result-item-search">
+				<button id='last_page' class='my-button' onclick='page=page-1;fetch_and_draw();'>◀上一頁</button>
+				<span id='page_number' style='margin:0px 10px;'>1</span>
+				<button id='next_page' class='my-button' onclick='page=page+1;fetch_and_draw();'>下一頁▶</button>
+			</div><!-- /.result-item-search -->
+		</div><!-- /.result-table-func-wrap -->
+		<div id="table_container"></div>
+	</div><!-- /.search-result-wrap -->
+</div><!-- /.page-wrapper -->
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+<script type="text/javascript" src="/javascripts/temp_data.js"></script>
+<script type="text/javascript" src="/javascripts/common.js"></script>
+
+<script>
+
+function test(){
+
+	let query_data_para = {
+		db_name : "line_prod_cloudantDB",
+		table : "taipei_digital",
+		cloudant_query : JSON.stringify({
+		   "selector": {
+			  "time": {
+				 "$lt": "2018-08-06"
+			  },
+			  "type":{
+				"$eq":"return"
+			  }
+		   }
+		}),
+	};
+	query_data(query_data_para,function(data){
+		console.log(data);
+		my_data = data;
+	});
+}
+
+let limit = 1000;
+let page = 0;
+let restrict_search = 1;
+let cloudant_query =
+
+{
+	"selector": {
+		//"type": {
+		//	"$eq": "SendMessages"
+		//}
+		//,"timestamp": {
+		//	"$gt": new Date($("#from_time").val()).getTime(),
+		//	"$lt": new Date($("#till_time").val()).getTime()
+		//},
+	},
+	//sort: [{"timestamp": "desc"}],
+	//limit: 100,
+	//skip: 0
+};
+
+function fetch_and_draw(){
+	
+	if(limit==-1){
+		delete cloudant_query.limit;
+	}else{
+		cloudant_query.limit = limit;
+	}
+	
+	cloudant_query.skip = page*limit ;
+	
+	$("#select").val(limit);
+	
+	if( $("#till_time").val()!="" || $("#from_time").val()!=""){
+		if($("#till_time").val()!="" && $("#from_time").val()!=""){
+			let from_time = new Date($("#from_time").val());
+			let till_time = new Date($("#till_time").val());
+			till_time.setDate(new Date(till_time).getDate()+1);
+			
+			if(restrict_search && till_time-from_time<1000*60*60*24*4){
+				if(cloudant_query["selector"]["timestamp"]==null){
+					cloudant_query["selector"]["timestamp"]={};
+				}
+				
+				
+				cloudant_query["selector"]["timestamp"]["$gt"] = from_time.getTime();
+				cloudant_query["selector"]["timestamp"]["$lt"] = till_time.getTime();
+			}else{
+				warningMsg("提示","單次查詢最長時間區間為三天");
+				return ;
+			}
+			
+		}else{
+			warningMsg("提示","日期請填寫完整");
+			return ;
+		}
+	}else{
+		delete cloudant_query["selector"]["timestamp"];
+		/*if(restrict_search){
+			warningMsg("提示","請填寫查詢區間");
+			return ;
+		}*/
+	}
+	
+	console.log(JSON.stringify(cloudant_query,null,1));
+	loading();
+	/*$.ajax({
+		type : "POST",
+		url : "/query_data",
+		cache : false,
+		data : {
+			table : "taipei_digital_watson",
+			cloudant_query : JSON.stringify(cloudant_query),
+		},
+		success: function(data) {
+
+			let dataArr = JSON.parse(data);*/
+			let dataArr = temp_data;
+			let outputArr = [];
+			/*$("#data_amount").html(
+				(limit==-1?"共"+dataArr.length+"筆":"")
+			);
+			console.log(dataArr);
+			$("#data_focus").html(
+				(getUrlParameter("id") && dataArr.length>0
+				?"(特定查詢:"+dataArr[0]["名字"]+")<a style='font-size:0.5em;' href='"+location.pathname+"'>返回</a>"
+				:"")
+			);
+			$("#page_number").html(1+page);
+			$("#last_page").prop('disabled', page==0 );
+			$("#next_page").prop('disabled', dataArr.length!=limit );
+			*/
+			dataArr.sort(function(a,b){
+			
+				let atext = a.payload.context.conversation_id;
+				let btext = b.payload.context.conversation_id;
+				
+				if(atext>btext){
+					return 1;
+				}else if(atext<btext){
+					return -1;
+				}else{
+					return 0;
+				}
+				//return b.payload.context.conversation_id-a.payload.context.conversation_id;
+			});
+			console.log(dataArr);
+			outputArr = dataArr.map(function(item,i){
+				let intent = '';
+				let entity = '';
+				let intentStr = item.payload.intents[0]?(
+							"#"+item.payload.intents[0].intent+"<br> "
+							 +"("+(item.payload.intents[0].confidence+"").substring(0,5)+")"
+						):"";
+
+				let entityStr = item.payload.entities[0]?
+						item.payload.entities.map(function(e_item){
+							return "@"+e_item.entity+(e_item.value?":"+e_item.value:"");
+						}).join("<br>"):"";
+						
+				return {
+					"-":i+1,
+					"人":item.payload.context.conversation_id
+							.replace("7fa480e6-f220-4623-8479-caa65951dd04"," 咪塔")
+							.replace("03957374-528a-4724-9e9b-3f12d117cb53"," 本")
+							.substring(0,13),
+					"說了":item.payload.input.text,
+					"得到回答":item.payload.output.text.join(""),
+					"意圖":intentStr,
+					"實體":entityStr,
+					"發生錯誤":item.payload.output.error?item.payload.output.error:"",
+				};
+			});
+			
+			$("#table_container").html(plain_table(outputArr));
+			//$(".search-result-wrap").show();
+			
+			loading('over');
+	/*	}
+		,error: function (jqXHR, textStatus, errorThrown) {
+	                	loading('get error: '+jqXHR.responseText);
+	                	warningMsg("錯誤","發生異常錯誤，請通知系統管理員。");
+	        		}
+	});*/
+}
+$(function(){
+	test();
+	/*
+	if(getUrlParameter("id")){
+		if(cloudant_query["selector"]["type"] && cloudant_query["selector"]["type"]["$eq"]=="SendMessages"){
+			id_posi="sender";
+		}else{
+			id_posi="target";
+		}
+		cloudant_query["selector"][id_posi]={
+			"$eq": getUrlParameter("id")
+		}
+		limit=100;
+		fetch_and_draw();
+	}else{
+		$(".input-date").datepicker("setDate", new Date());
+	}
+	$(".input-date").keyup(function(e){
+		if(e.keyCode == 13){
+			$("#search_time").trigger("click");
+		}
+	});
+	*/
+	fetch_and_draw()
+	/*$("#search_time").click(function(e){
+		page = 0;
+		fetch_and_draw();
+	});
+	
+	$("#select").change(function() {
+		limit=+$(this).val();
+		page=0; 
+		fetch_and_draw();
+	});*/
+});
+
+
+function plain_table(obj){
+	var html ="";
+	if(Array.isArray(obj)){
+		if(obj.length==0){
+			warningMsg("警告","無資料");
+		}else{
+			let obj_keys = Object.keys(obj[0])
+			html += "<table id='table' class='result-table'><thead><tr>";
+			for(let i=0; i<obj_keys.length; i++) {
+				html += '<th>' + obj_keys[i] + '</th>';
+			}
+			html += "</tr></thead><tbody>";
+			
+			for(let i=0; i<obj.length; i++) {
+				html += "<tr>";
+				for(let j=0; j<obj_keys.length; j++) {
+					html += '<td>' + obj[i][obj_keys[j]] + '</td>';
+				}
+				html += "</tr>";
+			}
+			html += "</tbody></table>";
+		}	
+	}else{
+		warningMsg("警告","錯誤");
+	}
+	return html;
+
+}
+
+
+function warningMsg(title, msg) {
+	$("<div/>").html(msg).dialog({
+		title: title,
+		draggable : true, resizable : false, autoOpen : true,
+		height : "auto", width : "240", modal : true,
+		buttons : [{
+			text: "確定", 
+			click: function() { 
+				$(this).dialog("close");
+			}
+		}]
+	});
+}
+
+$(document).on('click','th',function(){
+    var table = $(this).parents('table').eq(0);
+    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
+    this.asc = !this.asc;
+    if (!this.asc){rows = rows.reverse();}
+    table.children('tbody').empty().html(rows);
+});
+function comparer(index) {
+    return function(a, b) {
+        var valA = getCellValue(a, index), valB = getCellValue(b, index);
+        return $.isNumeric(valA) && $.isNumeric(valB) ?
+            valA - valB : valA.localeCompare(valB);
+    };
+}
+function getCellValue(row, index){
+    return $(row).children('td').eq(index).text();
+}
+function loading(str){
+	if(!window.loading_count){
+		loading_count=0;
+	}
+	if(!window.loading_timeout){
+		loading_timeout=[];
+	}
+	
+	if($("#loading").length==0){
+		$("body").append('<div id="loading" style="display: none;padding:15px;"><div>資料讀取中，請稍後...</div></div>');
+	}
+	if(str!=null && str!="now"){
+		if(str!="over"){
+			console.log("loading_error:"+str);
+		}
+		loading_count--;
+		
+		clearTimeout(loading_timeout.shift());
+		
+		if(loading_count<=0){
+			loading_count = 0;
+			$("#loading").hide();
+		}
+	}else{
+		loading_count++;
+		if(str=="now"){
+			$("#loading").show();
+			loading_timeout.push (0);
+		}else{
+			loading_timeout.push ( 
+				setTimeout(function(){
+					$("#loading").show();
+				},200)
+			);
+		}
+	}
+}
+function getUrlParameter(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title><%= title %></title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+
+	<style>
+	.my-title{
+		font-size: 30px;
+	}
+	.my-button{
+		padding: 3px 8px;
+	}
+	th{
+		cursor: pointer;
+	}
+	th, td:nth-child(1),td:nth-child(2),td:nth-child(3),td:nth-child(6),td:nth-child(7),td:nth-child(8),td:nth-child(9){
+		word-break: keep-all;
+	}
+	td:nth-child(1), td:nth-child(2),td:nth-child(6),td:nth-child(7),td:nth-child(8),,td:nth-child(9){
+		text-align: right;
+	}
+	#loading {
+		position: fixed;
+		background-color: rgba(128,128,128,0.5);
+		width: 100vw;
+		height: 100vh;
+		z-index: 100;
+		top:0px;
+		right:0px;
+	}
+	#loading div{
+		margin: auto;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		position: absolute;
+		width: 240px;
+		height: 24px;
+		border: 1px solid #888;
+		border-radius: 10px;
+		background: #fefefe;
+		font-size: 20px;
+		padding: 20px;
+		text-align: center;
+		box-sizing: content-box;
+		box-shadow: 3px 3px 20px rgba(0, 0, 0, 0.6);
+	}
+	.fake_thead{
+		vertical-align: bottom;
+		font-size: 24px;
+	}
+	.result-table-func-wrap{
+		text-align:center;
+	}
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'><%= title %></span>
+			</div>
+			<!--div class="form-row">
+				<label for="">
+					<span class="block-label">things</span>
+					<input type="text">
+				</label>
+				<a href="#" class="btn btn-darkblue">查詢</a>
+			</div-->
+			<div class="form-row">
+				<label for="">
+					<span class="block-label">起日</span>
+					<input type="text" id='from_time' class="input-date">
+				</label>
+				<div class="forward-mark"></div>
+				<label for="">
+					<span class="block-label">迄日</span>
+					<input type="text" id='till_time' class="input-date">
+				</label>
+			</div>
+			<div class="form-row">
+				<a href="#"  id='search_time' class="btn btn-darkblue btn-wide">查詢</a>
+			</div>
+			<div class="form-row">	
+			</div>
+		</div><!-- /.form-wrap -->
+	</div><!-- /.input-field-wrap -->
+
+	<div class="search-result-wrap" style="display:none;">
+		<div class="result-table-func-wrap" >
+			<span class='fake_thead' id='data_amount'>共0筆</span>
+			<div class="result-item-display">
+				顯示
+				<select name="" id="select">
+					<option value="20">20</option>
+					<option value="100">100</option>
+					<option value="500">500</option>
+					<option value="1000">1000</option>
+					<option value="-1">所有</option>
+				</select> 項結果
+			</div><!-- /.result-item-display -->
+			<div class="result-item-search">
+				<button id='last_page' class='my-button' onclick='page=page-1;fetch_and_draw();'>◀上一頁</button>
+				<span id='page_number' style='margin:0px 10px;'>1</span>
+				<button id='next_page' class='my-button' onclick='page=page+1;fetch_and_draw();'>下一頁▶</button>
+			</div><!-- /.result-item-search -->
+		</div><!-- /.result-table-func-wrap -->
+		<div id="table_container"></div>
+	</div><!-- /.search-result-wrap -->
+</div><!-- /.page-wrapper -->
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+
+<script>
+
+let limit = 20;
+let page = 0;
+
+let cloudant_query = 
+{
+	"selector": {
+		"type": {
+			"$eq": "SendMessages"
+		}
+		//,"timestamp": {
+		//	"$gt": new Date($("#from_time").val()).getTime(),
+		//	"$lt": new Date($("#till_time").val()).getTime()
+		//},
+	},
+	sort: [{"timestamp": "desc"}],
+	//limit: 100,
+	//skip: 0
+};
+
+function fetch_data(table,cloudant_query,callback){
+	loading();
+	$.ajax({
+		type : "POST",
+		url : "/query_data",
+		cache : false,
+		data : {
+			table : table,
+			cloudant_query : JSON.stringify(cloudant_query),
+			raw_data:true
+		},
+		success: function(data) {
+		
+			callback(data);
+			global_var = data
+			loading('over');
+		}
+		,error: function (jqXHR, textStatus, errorThrown) {
+			loading('get error: '+jqXHR.responseText);
+			warningMsg("錯誤","發生異常錯誤，請通知系統管理員。");
+		}
+	});
+}
+$(function(){
+	fetch_data("normal_profile",{
+		"selector": {
+		},
+		"sort": [{"timestamp": "desc"}]
+	},function(result){
+		let jsonObj = JSON.parse(result);
+		console.log("123");
+		console.log(jsonObj);
+	})
+	
+});
+
+
+function plain_table(obj){
+	var html ="";
+	if(Array.isArray(obj)){
+		if(obj.length==0){
+			warningMsg("警告","無資料");
+		}else{
+			let obj_keys = Object.keys(obj[0])
+			html += "<table id='table' class='result-table'><thead><tr>";
+			for(let i=0; i<obj_keys.length; i++) {
+				html += '<th>' + obj_keys[i] + '</th>';
+			}
+			html += "</tr></thead><tbody>";
+			
+			for(let i=0; i<obj.length; i++) {
+				html += "<tr>";
+				for(let j=0; j<obj_keys.length; j++) {
+					html += '<td>' + obj[i][obj_keys[j]] + '</td>';
+				}
+				html += "</tr>";
+			}
+			html += "</tbody></table>";
+		}	
+	}else{
+		warningMsg("警告","錯誤");
+	}
+	return html;
+
+}
+
+
+function warningMsg(title, msg) {
+	$("<div/>").html(msg).dialog({
+		title: title,
+		draggable : true, resizable : false, autoOpen : true,
+		height : "auto", width : "240", modal : true,
+		buttons : [{
+			text: "確定", 
+			click: function() { 
+				$(this).dialog("close");
+			}
+		}]
+	});
+}
+
+$(document).on('click','th',function(){
+    var table = $(this).parents('table').eq(0);
+    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
+    this.asc = !this.asc;
+    if (!this.asc){rows = rows.reverse();}
+    table.children('tbody').empty().html(rows);
+});
+function comparer(index) {
+    return function(a, b) {
+        var valA = getCellValue(a, index), valB = getCellValue(b, index);
+        return $.isNumeric(valA) && $.isNumeric(valB) ?
+            valA - valB : valA.localeCompare(valB);
+    };
+}
+function getCellValue(row, index){
+    return $(row).children('td').eq(index).text();
+}
+function loading(str){
+	if(!window.loading_count){
+		loading_count=0;
+	}
+	if(!window.loading_timeout){
+		loading_timeout=[];
+	}
+	
+	if($("#loading").length==0){
+		$("body").append('<div id="loading" style="display: none;padding:15px;"><div>資料讀取中，請稍後...</div></div>');
+	}
+	if(str!=null && str!="now"){
+		if(str!="over"){
+			console.log("loading_error:"+str);
+		}
+		loading_count--;
+		
+		clearTimeout(loading_timeout.shift());
+		
+		if(loading_count<=0){
+			loading_count = 0;
+			$("#loading").hide();
+		}
+	}else{
+		loading_count++;
+		if(str=="now"){
+			$("#loading").show();
+			loading_timeout.push (0);
+		}else{
+			loading_timeout.push ( 
+				setTimeout(function(){
+					$("#loading").show();
+				},200)
+			);
+		}
+	}
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+.my-title{
+	font-size: 30px;
+}
+.my-button{
+	padding: 3px 8px;
+}
+
+#loading {
+	position: fixed;
+	background-color: rgba(128,128,128,0.5);
+	width: 100vw;
+	height: 100vh;
+	z-index: 100;
+	top:0px;
+	right:0px;
+}
+#loading div{
+	margin: auto;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	position: absolute;
+	width: 240px;
+	height: 24px;
+	border: 1px solid #888;
+	border-radius: 10px;
+	background: #fefefe;
+	font-size: 20px;
+	padding: 20px;
+	text-align: center;
+	box-sizing: content-box;
+	box-shadow: 3px 3px 20px rgba(0, 0, 0, 0.6);
+}
+/*.fake_thead{
+	vertical-align: bottom;
+	font-size: 24px;
+}*/
+.result-table-func-wrap{
+	text-align:center;
+}
+caption{
+	font-size:1.5em;
+}
+/*#table_container table{
+	margin:0px 20px 20px 20px;
+}*/

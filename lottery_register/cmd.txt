@@ -1,0 +1,7 @@
+bluemix api https://api.ng.bluemix.net
+bluemix login -u GRACECHIU@mail.hotaimotor.com.tw -o DANAYU@mail.hotaimotor.com.tw -s dev
+bluemix app push YTFF-register-test
+
+bluemix api https://api.ng.bluemix.net
+bluemix login -u GRACECHIU@mail.hotaimotor.com.tw -o HT_events -s dev
+bluemix app push YTFF-register

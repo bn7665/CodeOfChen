@@ -1,0 +1,6 @@
+applications:
+- path: .
+  memory: 512M
+  instances: 1
+  name: node_cloudant
+  disk_quota: 512M

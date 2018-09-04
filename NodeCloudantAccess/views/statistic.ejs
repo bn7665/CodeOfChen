@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>統計數據</title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+
+	<style>
+	.my-title{
+		font-size: 30px;
+	}
+	td:nth-child(4){
+		max-width:500px;
+	}
+	th, td:nth-child(1),td:nth-child(2),td:nth-child(3),td:nth-child(6),td:nth-child(7),td:nth-child(8),td:nth-child(9){
+		word-break: keep-all;
+	}
+	td:nth-child(2),td:nth-child(3),td:nth-child(7),td:nth-child(8),td:nth-child(9){
+		text-align: right;
+	}
+	#loading {
+		position: fixed;
+		background-color: rgba(128,128,128,0.5);
+		width: 100vw;
+		height: 100vh;
+		z-index: 100;
+		top:0px;
+		right:0px;
+	}
+	#loading div{
+		margin: auto;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		position: absolute;
+		width: 240px;
+		height: 24px;
+		border: 1px solid #888;
+		border-radius: 10px;
+		background: #fefefe;
+		font-size: 20px;
+		padding: 20px;
+		text-align: center;
+		box-sizing: content-box;
+		box-shadow: 3px 3px 20px rgba(0, 0, 0, 0.6);
+	}
+	.fake_thead{
+		vertical-align: bottom;
+		font-size: 24px;
+	}
+	.result-table-func-wrap{
+		text-align:center;
+	}
+	#index_table{
+		margin:20px 0 ;
+	}
+	#index_table td{
+		padding:5px;
+		text-align:center;
+	}
+	#index_table td img{
+		width:140px;
+	}
+	caption{
+		font-size:1.5em;
+	}
+	#table_container table{
+		margin:20px;
+	}
+	
+	
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="search-result-wrap" style="">
+	
+		<table id='index_table'>
+			<tr>
+				<td>
+					<a href='/?type=conversation'>
+						<img src="/images/conversation_icon.png"  />
+					</a>
+				</td>
+				<td>
+					<a href='/?type=call_manager'>
+						<img src="/images/call_manager_icon.png"  />
+					</a>
+				</td>
+				<td>
+					<a href='/?type=over_30'>
+						<img src="/images/over_30_icon.png"  />
+					</a>
+				</td>
+				<td>
+					<a href='/?type=send_picture'>
+						<img src="/images/send_picture_icon.png"  />
+					</a>
+				</td>
+				<td>
+					<a href='/statistic'>
+						<img src="/images/statistic_icon.png"  />
+					</a>
+				</td>
+			</tr>
+		</table>
+		<div style='margin-top:16px;' class="my-title"></div>
+		<div id="table_container">
+			<table>
+				<tr><td><div id='statistic_div'></div></td><td><div id='lottery_picture'></div></td></tr>
+			</table>
+		</div>
+	</div><!-- /.search-result-wrap -->
+</div><!-- /.page-wrapper -->
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+
+<script>
+
+$(function(){
+	$(".my-title").html("數據統計");
+	
+	
+	query_view("normal_statistic","interaction_distinct_people",function(result){
+		//console.log(result);
+		let day_dict = {}
+		let total_times=0;
+		let total_people_list = [];
+		
+		for(let i=0;i<result.length;i++){
+			if(total_people_list.indexOf(result[i].key[0])==-1){
+				total_people_list.push(result[i].key[0]);
+			}
+			if(day_dict[result[i].key[1]]==null){
+				day_dict[result[i].key[1]]={
+					peoples:0,
+					interactions:0
+				}
+			}
+			day_dict[result[i].key[1]].peoples++;
+			day_dict[result[i].key[1]].interactions+=result[i].value;
+			total_times+=result[i].value;
+		}
+		
+		let table_str= "";
+		let keys = Object.keys(day_dict);
+		keys.sort();
+		table_str+="<table class='result-table' style='width:240px;'>"
+				+"<caption>互動人數人次</caption>"
+				+"<tr><th>日期</th><th>人數</th><th>人次</th></tr>";
+		for(let i=0;i<keys.length;i++){
+			table_str+="<tr><td>"+keys[i]+"</td><td>"+day_dict[keys[i]].peoples+"</td><td>"+day_dict[keys[i]].interactions+"</td></tr>"
+		}
+		table_str+="<tr style='border-top:3px solid #111'><td>活動期間</td><td>"+total_people_list.length+"</td><td>"+total_times+"</td></tr>"
+		table_str+="</table>";
+		$("#statistic_div").append(table_str);
+	});
+	query_view("normal_statistic","count_press_button",function(result){
+		//console.log(result);	
+		$("#statistic_div").append(
+			"<table class='result-table' style='width:240px;'>"
+				+"<caption>按鈕次數統計</caption>"
+				+"<tr><th>按鈕名稱</th><th>總點擊次數</th></tr>"
+				+result.map(function(item){
+						return $("<div/>").html(
+							$("<tr/>").html([
+								$("<td/>").html(item.key),
+								$("<td/>").html(item.value)
+							])
+						).html();
+					}).join("")
+			+"</table>"
+		)
+	});
+	
+	$.ajax({
+		type : "POST",
+		url : "/query_data",
+		cache : false,
+		data : {
+			table : "normal_statistic",
+			cloudant_query : JSON.stringify({
+				"selector": {
+					"type": {
+						"$eq": "LotteryPicture"
+					}
+				},
+				sort: [{"timestamp": "desc"}]
+			}),
+			raw_data:true
+		},
+		success: function(jsonStr) {
+			let data=JSON.parse(jsonStr);
+			let table_str= "";
+			table_str += "<table class='result-table' style='width:700px;'>"
+					+"<caption>參加抽獎名單</caption>"
+					+"<tr><th>-</th><th>PSID</th><th>名稱</th><th>圖片</th><th>時間</th></tr>";
+			for(let i=0;i<data.length;i++){
+				let item= data[i];
+				table_str+="<tr><td>"+(i+1)+"</td><td>"+item.sender+"</td><td>"+item.name+"</td><td><a href='"+item.picture_url+"'>圖片</a></td><td>"+item.time+"</td></tr>";
+			}
+			table_str+="</table>";
+			$("#lottery_picture").append(table_str);
+			loading('over');
+		}
+		,error: function (jqXHR, textStatus, errorThrown) {
+			loading('get error: '+jqXHR.responseText);
+			warningMsg("錯誤","發生異常錯誤，請通知系統管理員。");
+		}
+	});
+});
+
+	
+
+function query_view(table_name,view_name,callback){
+loading();
+	$.ajax({
+		type : "POST",
+		url : "/query_view",
+		cache : false,
+		data : {
+			table_name : table_name,
+			view_name : view_name
+		},
+		success: function(data) {
+			if(callback){
+				callback(data);
+			}
+			loading('over');
+		}
+		,error: function (jqXHR, textStatus, errorThrown) {
+			loading('get error: '+jqXHR.responseText);
+			warningMsg("錯誤","發生異常錯誤，請通知系統管理員。");
+		}
+	});
+}
+function warningMsg(title, msg) {
+	$("<div/>").html(msg).dialog({
+		title: title,
+		draggable : true, resizable : false, autoOpen : true,
+		height : "auto", width : "240", modal : true,
+		buttons : [{
+			text: "確定", 
+			click: function() { 
+				$(this).dialog("close");
+			}
+		}]
+	});
+}
+/*
+$(document).on('click','th',function(){
+    var table = $(this).parents('table').eq(0);
+    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
+    this.asc = !this.asc;
+    if (!this.asc){rows = rows.reverse();}
+    table.children('tbody').empty().html(rows);
+});
+function comparer(index) {
+    return function(a, b) {
+        var valA = getCellValue(a, index), valB = getCellValue(b, index);
+        return $.isNumeric(valA) && $.isNumeric(valB) ?
+            valA - valB : valA.localeCompare(valB);
+    };
+}
+function getCellValue(row, index){
+    return $(row).children('td').eq(index).text();
+}
+*/
+function loading(str){
+	if(!window.loading_count){
+		loading_count=0;
+	}
+	if(!window.loading_timeout){
+		loading_timeout=[];
+	}
+	
+	if($("#loading").length==0){
+		$("body").append('<div id="loading" style="display: none;padding:15px;"><div>資料讀取中，請稍後...</div></div>');
+	}
+	if(str!=null && str!="now"){
+		if(str!="over"){
+			console.log("loading_error:"+str);
+		}
+		loading_count--;
+		
+		clearTimeout(loading_timeout.shift());
+		
+		if(loading_count<=0){
+			loading_count = 0;
+			$("#loading").hide();
+		}
+	}else{
+		loading_count++;
+		if(str=="now"){
+			$("#loading").show();
+			loading_timeout.push (0);
+		}else{
+			loading_timeout.push ( 
+				setTimeout(function(){
+					$("#loading").show();
+				},200)
+			);
+		}
+	}
+}
+function getUrlParameter(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+
+</script>
+</body>
+</html>

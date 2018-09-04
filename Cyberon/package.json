@@ -1,0 +1,26 @@
+{
+  "name": "cyberon",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "supervisor ./bin/www"
+  },
+  "dependencies": {
+    "audiobuffer-to-wav": "^1.0.0",
+    "buffer-to-stream": "^1.0.0",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "ejs": "~2.5.7",
+    "express": "~4.16.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "http-errors": "~1.6.2",
+    "morgan": "~1.9.0",
+    "stream": "0.0.2",
+    "streamifier": "^0.1.1",
+    "supervisor": "^0.12.0",
+    "web-audio-api": "^0.2.2",
+    "websocket": "^1.0.26",
+    "websocket-stream": "^5.1.2",
+    "winston": "^3.0.0"
+  }
+}

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>XXXX</title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+</head>
+<style>
+.my-title{
+	font-size: 30px;
+}
+</style>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'>TITLE　　</span>
+			</div>
+			<div class="form-row">
+				<label for="">
+					<span class="block-label">things</span>
+					<input type="text">
+				</label>
+				<a href="#" class="btn btn-darkblue">查詢</a>
+			</div>
+			<div class="form-row">
+				<label for="">
+					<span class="block-label">起日</span>
+					<input type="text" id='from_time' class="input-date">
+				</label>
+				<div class="forward-mark"></div>
+				<label for="">
+					<span class="block-label">迄日</span>
+					<input type="text" id='till_time' class="input-date">
+				</label>
+				<a href="#"  id='search_time' class="btn btn-darkblue">查詢</a>
+			</div>
+			<div class="form-row">	
+			</div>
+		</div><!-- /.form-wrap -->
+	</div><!-- /.input-field-wrap -->
+
+	<div class="search-result-wrap">
+		<table id="example" class="result-table">
+			
+		</table>
+		<div class="result-table-func-wrap">
+			<div class="result-item-display">
+				顯示
+				<select name="" id="">
+					<option value="">10</option>
+					<option value="">50</option>
+					<option value="">100</option>
+				</select> 項結果
+			</div><!-- /.result-item-display -->
+			<div class="result-item-search">
+				<input type="text" placeholder="Search">
+			</div><!-- /.result-item-search -->
+		</div><!-- /.result-table-func-wrap -->
+
+		<div class="result-table-wrap">
+			<table class="result-table">
+				<thead>
+					<tr>
+						<th>銷貨單號</th>
+						<th>訂單號</th>
+						<th>產品名稱</th>
+						<th>自訂產品 ID</th>
+						<th>銷貨數量</th>
+						<th>銷貨金額</th>
+						<th>發票號碼</th>
+						<th>發票日期</th>
+						<th>轉單日</th>
+						<th>配送日</th>
+						<th>備註說明</th>
+						<th>銷貨/出貨日期</th>
+						<th>銷售平台</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>2016060137878</td>
+						<td>2016060137878</td>
+						<td>名稱</td>
+						<td>1234567890</td>
+						<td>1</td>
+						<td>1680</td>
+						<td>NULL</td>
+						<td>2016-06-01</td>
+						<td>2016-06-01</td>
+						<td>2016-06-01</td>
+						<td>NULL</td>
+						<td>2016-06-01</td>
+						<td>payeasy</td>
+					</tr>
+					<tr>
+						<td>2016060137878</td>
+						<td>2016060137878</td>
+						<td>名稱名稱名稱</td>
+						<td>1234567890</td>
+						<td>1</td>
+						<td>1680</td>
+						<td>NULL</td>
+						<td>2016-06-01</td>
+						<td>2016-06-01</td>
+						<td>2016-06-01</td>
+						<td>NULL</td>
+						<td>2016-06-01</td>
+						<td>payeasy</td>
+					</tr>
+				</tbody>
+			</table>
+		</div><!-- /.result-table-wrap -->
+	</div><!-- /.search-result-wrap -->
+</div><!-- /.page-wrapper -->
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+
+<script>
+let cloudant_query = {
+	"selector": {
+		"type": {
+			"$eq": "SendMessages"
+		},
+		"timestamp": {
+			"$gt": new Date($("#from_time").val()).getTime(),
+			"$lt": new Date($("#till_time").val()).getTime()
+		},
+	},
+	sort: [{"timestamp": "desc"}],
+	limit: 1000 ,
+	skip: 0
+};
+$(function(){
+
+	dt = $('#example').DataTable({
+		ajax:{
+			type : "POST",
+			dataType: "json",
+			url : "/query_data",
+			cache : false,
+			data : function(){
+				return {
+					table : "normal_statistic",
+					cloudant_query : JSON.stringify(cloudant_query)
+				};
+			},
+			dataSrc:function(json){
+			
+				console.log(json.length);
+				return json;
+			}
+		},
+		language: {"url": "/javascripts/dataTables_zh-tw.js"},
+		"columns": [
+			{
+				render: function(data, type, row, meta) {
+					return meta.row+1;
+				}
+			},
+			{ data: 'sender',title:'PSID' },
+			{ data: 'name', title:'名字'},
+			{
+				data: 'targetSays',
+				title:'訊息類型',
+				render: function(data, type, row, meta) {
+					console.log(data);
+					return data;
+				}
+			},
+			{
+				data: 'targetSays',
+				title:'訊息內容',
+				render: function(data, type, row, meta) {
+					return data;
+				}
+			},
+			{ data: 'time', title:'時間'}
+		]
+		
+	});
+
+	$("#search_time").click(function(e){
+		
+
+		let from_time = new Date($("#from_time").val());
+		let till_time = new Date($("#till_time").val());
+		till_time.setDate(new Date(till_time).getDate()+1);
+		cloudant_query["selector"]["timestamp"]["$gt"] = from_time.getTime();
+		cloudant_query["selector"]["timestamp"]["$lt"] = till_time.getTime();
+		
+		//new Date($("#till_time").val()).setDate(new Date($("#till_time").val()).getDate()+1).getTime()
+		
+		dt.ajax.reload();
+		
+		/*
+		$.ajax({
+			type : "POST",
+			dataType: "json",
+			url : "http://localhost:3000/query_data",
+			cache : false,
+			data : {
+				table : "normal_statistic",
+				cloudant_query : JSON.stringify(cloudant_query)
+			},
+			success: function(data) {
+				alert(data);
+				console.log(data);
+				global_para = data;
+			}
+		});
+		*/
+	});
+	
+});
+$(document).on('click','th',function(){
+    var table = $(this).parents('table').eq(0);
+    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
+    this.asc = !this.asc;
+    if (!this.asc){rows = rows.reverse();}
+    table.children('tbody').empty().html(rows);
+});
+function comparer(index) {
+    return function(a, b) {
+        var valA = getCellValue(a, index), valB = getCellValue(b, index);
+        return $.isNumeric(valA) && $.isNumeric(valB) ?
+            valA - valB : valA.localeCompare(valB);
+    };
+}
+function getCellValue(row, index){
+    return $(row).children('td').eq(index).text();
+}
+
+
+</script>
+</body>
+</html>

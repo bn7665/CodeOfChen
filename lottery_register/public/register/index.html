@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>TOYOTA YTFF 抽獎登記</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:image" content="https://s3-api.us-geo.objectstorage.softlayer.net/tytimage/LINE_images_test/lottery_page/TOYOTA_LOGO.png" />
+<!--===============================================================================================-->	
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+<!--===============================================================================================-->	
+	<!--link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css"-->
+<!--===============================================================================================-->
+	<!--link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css"-->
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+<!--===============================================================================================-->
+	<style>
+	body {
+		font-family: "Microsoft JhengHei";
+	}
+	.login100-form-title , .login100-form-btn ,.txt1, .txt2 , .input100, h2, h3 , h4 {
+		font-family: "Microsoft JhengHei";
+	}
+	.wrap-login100 {
+		overflow: inherit;
+	}
+	.container-login100-form-btn{
+		padding-top:5px;
+	}
+	</style>
+</head>
+<body>
+	
+	<div class="limiter">
+		<div class="container-login100">
+			<div class="wrap-login100">
+				<div style="position: relative;height:0px;width:100%;top:-120px;left: 50%;margin-left: -80px;width: 160px;">
+						<img src="https://s3-api.us-geo.objectstorage.softlayer.net/tytimage/LINE_images_test/lottery_page/TOYOTA_LOGO_OVAL.png" style='width: 160px;' alt="">
+				</div>
+				<h4 id='no-script'style='margin:auto;text-align:center;color:#c66;'>瀏覽器不支援JavaScript,請使用其他瀏覽器進行抽獎登記</h4>
+				<form style='display:none;' onsubmit="return false;" class="login100-form validate-form" action="/register_data" method="post">
+					
+					<span class="login100-form-title">
+						TOYOTA YTFF 抽獎登記
+					</span>
+
+					<div class="wrap-input100 validate-input" data-validate = "名字格式錯誤">
+						<input class="input100" type="text" name="username" placeholder="你的名字">
+						<span class="focus-input100"></span>
+						<span class="symbol-input100">
+							<i class="fa fa-user-circle" aria-hidden="true"></i>
+						</span>
+					</div>
+					<div class="wrap-input100 validate-input" data-validate = "電話格式錯誤">
+						<input class="input100" type="text" name="telphone" placeholder="聯絡電話">
+						<span class="focus-input100"></span>
+						<span class="symbol-input100">
+							<i class="fa fa-phone" aria-hidden="true"></i>
+						</span>
+					</div>
+					<div class="wrap-input100 validate-input" data-validate = "信箱格式錯誤">
+						<input class="input100" type="text" name="email" placeholder="電子信箱">
+						<span class="focus-input100"></span>
+						<span class="symbol-input100">
+							<i class="fa fa-envelope" aria-hidden="true"></i>
+						</span>
+					</div>
+					
+					<div class="text-center">
+						<span style='padding:4px 16px;'>
+						<input type='checkbox' id='agree' />
+						<label class="txt1" for="agree" >
+							 我已閱讀並同意
+						</label>
+						<a class="txt2" target="_blank" href="https://www.toyota.com.tw/privacy.aspx">
+							TOYOTA個資法聲明
+						</a>
+						</span>
+					</div>
+					<div class="container-login100-form-btn">
+						<button class="login100-form-btn">
+							我要抽獎
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+	
+
+	
+<!--===============================================================================================-->	
+	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<!--script src="vendor/select2/select2.min.js"></script-->
+<!--===============================================================================================-->
+	<!--script src="vendor/tilt/tilt.jquery.min.js"></script-->
+	<script src="js/canvas.min.js"></script>
+	<script>
+function GetCookie (name) { 
+	var arg = name + "="; 
+	var alen = arg.length; 
+	var clen = document.cookie.length; 
+	var i = 0; 
+	while (i < clen) {
+		var j = i + alen; 
+		if (document.cookie.substring(i, j) == arg) 
+			return getCookieVal (j); 
+		i = document.cookie.indexOf(" ", i) + 1; 
+		if (i == 0) break; 
+	} 
+	return null;
+}
+function SetCookie (name, value) {
+	var CookieDate = new Date;
+	CookieDate.setFullYear(CookieDate.getFullYear( ) +10); 
+	var argv = SetCookie.arguments; 
+	var argc = SetCookie.arguments.length; 
+	var expires = CookieDate; 
+	var path = "/"; 
+	var domain = (argc > 4) ? argv[4] : null; 
+	var secure = (argc > 5) ? argv[5] : false; 
+	document.cookie = name + "=" + escape (value) + 
+	((expires == null) ? "" : ("; expires=" + expires.toGMTString())) + 
+	((path == null) ? "" : ("; path=" + path)) + 
+	((domain == null) ? "" : ("; domain=" + domain)) + 
+	((secure == true) ? "; secure" : "");
+}
+function setCookieId(cookieName, myCookieId){
+	var actCookieId = GetCookie(cookieName)
+	if(actCookieId == null) {
+		SetCookie(cookieName,myCookieId)
+		actCookieId = myCookieId
+	}
+	return actCookieId
+}
+function getCookieVal(offset) {
+	var endstr = document.cookie.indexOf (";", offset);
+	if (endstr == -1)
+		endstr = document.cookie.length;
+	return unescape(document.cookie.substring(offset, endstr));
+}
+
+function genCookieId(){
+	//random 10bit, ex:VHDJVMFT
+	var base = 36, pattern = new String('0000000000');
+	randomValue = new String(pattern + Math.floor(Math.random() * Math.pow(base, pattern.length)).toString(base));
+
+	var date = new Date();
+	//YYYYMMDDHHMMSS, ex:2017053121210987
+	tmpTimeString = date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2( date.getDate()) + pad2( date.getHours() ) + pad2( date.getMinutes() ) + pad2( date.getSeconds() );
+	return tmpTimeString + randomValue.substr(randomValue.length - pattern.length).toUpperCase();
+}
+function pad2(n) { return n < 10 ? '0' + n : n }
+
+// gen cookieId (YYYYMMDDHHMMSS + random 10bit)
+var actCookieId = genCookieId();
+// set ToyotaCookieId to cookie
+setCookieId('ToyotaCookieId', actCookieId);
+
+var canvas = new Canvas();
+// set ToyotaCanvas to cookie
+setCookieId('ToyotaCanvas', canvas.getCanvasFingerprint());
+
+</script>
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
+	
+	<script >
+		$(function(){
+			$.ajax({
+				type : "POST",
+				url : "/ht_trace_log",
+				cache : false,
+				data : {
+					cookie_id : actCookieId,
+					canvas_fingerprint : canvas.getCanvasFingerprint(),
+					date_time : Date.now()
+				},
+				success: function(result) {
+					console.log("logLook");
+					console.log(result);
+				}
+			});
+			//$('#no-script').remove();
+			//$('form').show();
+		})
+	</script>
+</body>
+</html>

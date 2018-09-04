@@ -1,0 +1,35 @@
+var express = require('express');
+const ffmpeg = require('fluent-ffmpeg');
+var fs = require('fs');
+var router = express.Router();
+router.get('/', function(req, res, next) {
+	var post_data = querystring.stringify({
+	  "text": req.query.text?req.query.text:"真是夠了哥的心好累累累累"});
+	});
+	let options = require('url').parse("http://vois3.cyberon.com.tw/cloud_tts/gen_tts_content.php");
+	options.method = 'POST';
+	options.headers = {
+		'Content-Type': 'application/x-www-form-urlenco
+	};
+	var post_req = http.request(options, function(resp) {
+		resp.setEncoding('utf8');
+		var data = [];
+		resp.on('data', function(chunk) {
+			data.push(chunk);
+		}).on('end', function() {
+			var buffer = Buffer.concat(data);
+			//res.send(result);
+			fs.writeFile("./output.wav", buffer.toString(), function(err) {
+			    if(err) {
+		          	return console.log(err);
+    			    }
+			    res.send("The file was saved!");
+			}); 
+		});
+	});
+	post_req.write(post_data);
+	post_req.end();
+});
+
+module.exports = router;
+

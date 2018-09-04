@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>不重複對話</title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+	
+	<link rel="stylesheet" href="/stylesheets/common.css">
+	<style>
+	th{
+		cursor: pointer;
+		word-break: keep-all;
+	}
+	td{
+		min-width:40px;
+		padding:6px 8px;
+	}
+	td:nth-child(1), td:nth-child(3){
+		text-align:right;
+	}
+	td:nth-child(2){
+		word-break: break-all;
+		max-width:80%;
+	}
+	
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<a href="/">Line對話表</a>
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'>不重複對話</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="search-result-wrap" style="display:none;" >
+		<div id="table_container"></div>
+	</div>
+</div>
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+<script type="text/javascript" src="/javascripts/common.js"></script>
+<script>
+
+function fetch_and_draw(){
+	
+	let query_view_para = {
+		db_name : "line_prod_cloudantDB",
+		table_name : "taipei_digital_after_watson",
+		view_name : "getDistinctMessage"
+	};
+	query_view( query_view_para, function(jsonData){
+		console.log(jsonData);
+		
+		let dataArr = jsonData;
+		dataArr.sort(function(a,b){
+			return b.value -a.value;
+		})
+		
+		let outputArr = dataArr.map(function(item,i){
+			return {
+				"-":i+1,
+				"內容":item.key,
+				"次數":item.value
+			};
+		});
+		
+		$("#table_container").html(plain_table(outputArr));
+		$(".search-result-wrap").show();
+	});
+	
+}
+$(function(){
+	fetch_and_draw();
+});
+
+</script>
+</body>
+</html>
