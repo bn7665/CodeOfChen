@@ -3,7 +3,8 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  
+  res.render('response_time_ytff');
+  return ;
   console.log(req.query);
   
   if(req.query.old != null){

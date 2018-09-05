@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>千則訊息ResponseTime</title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+	
+	<link rel="stylesheet" href="/stylesheets/common.css">
+	<style>
+	th{
+		cursor: pointer;
+	}
+	th, td:nth-child(2),td:nth-child(6),td:nth-child(7),td:nth-child(8){
+		word-break: keep-all;
+	}
+	td:nth-child(4), td:nth-child(7){
+		word-break: break-all;
+	}
+	td:nth-child(2), td:nth-child(3),td:nth-child(6),td:nth-child(7){
+		text-align: left;
+	}
+	td:nth-child(3){
+		width:120px;
+		max-width:120px;
+		word-break: break-all;
+	}
+	a{
+		margin: 6px;
+	}
+	
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<div style='height:0px;'>
+		</div>
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'>千則訊息ResponseTime</span>
+			</div>
+			<div class="form-row" style='display:none;'>
+				<label for="">
+					<span class="block-label">起日</span>
+					<input type="text" id='from_time' class="input-date">
+				</label>
+				<div class="forward-mark"></div>
+				<label for="">
+					<span class="block-label">迄日</span>
+					<input type="text" id='till_time' class="input-date">
+				</label>
+			</div>
+			<div class="form-row" style='display:none;'>
+				<a href="#" id='search_time' class="btn btn-darkblue btn-wide">查詢</a>
+			</div>
+			<div class="form-row">	
+			</div>
+		</div><!-- /.form-wrap -->
+	</div><!-- /.input-field-wrap -->
+
+	<div class="search-result-wrap" style="display:none;" >
+		<div class="result-table-func-wrap" style="display:none;">
+			<div class="result-item-display">
+				顯示
+				<select name="" id="select">
+					<option value="10">10</option>
+					<option value="20">20</option>
+					<option value="50">50</option>
+					<option value="100">100</option>
+					<!--option value="500">500</option-->
+					<option value="1000">1000</option>
+					<option value="5000">5000</option>
+					<!--option value="-1">所有</option-->
+				</select> 項結果
+			</div><!-- /.result-item-display -->
+			<div class="result-item-search">
+				<button id='last_page' class='my-button' onclick='page=page-1;fetch_and_draw();'>◀上一頁</button>
+				<span id='page_number' style='margin:0px 10px;'>1</span>
+				<button id='next_page' class='my-button' onclick='page=page+1;fetch_and_draw();'>下一頁▶</button>
+			</div><!-- /.result-item-search -->
+		</div><!-- /.result-table-func-wrap -->
+		<div id="table_container"></div>
+	</div><!-- /.search-result-wrap -->
+</div><!-- /.page-wrapper -->
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+<script type="text/javascript" src="/javascripts/common.js"></script>
+<script>
+
+function fetch_and_draw(){
+	//let can_search = before_query_cloudant();
+	//if(!can_search){return;}
+	
+	//console.log(JSON.stringify(cloudant_query,null,1));
+	//loading();
+	let query_view_para = {
+		db_name : "line_prod_cloudantDB",
+		table_name : "lineapi_log",
+		view_name : "getResponseTime"
+	};
+	let query_data_para = {
+		db_name : "line_prod_cloudantDB",
+		table : "lineapi_log",
+		cloudant_query : JSON.stringify({
+			"selector":{},
+			"limit":1000,
+			"sort": [{"time": "desc"}]
+		}),
+	};
+	
+	query_data( query_data_para, function(jsonData){
+		console.log(jsonData);
+		//let dataArr = jsonData ;
+		let data = jsonData.map(function(item,i){
+			return {
+				"-":i+1,
+				"時間":item.time,
+				"收到":item.input,
+				"回答":item.outputStr,
+				"回覆時間(毫秒)":item.response_time-item.request_time,
+			}
+		});
+		$("#table_container").html(plain_table(data));
+		$(".search-result-wrap").show();
+	});
+	
+}
+$(function(){
+	fetch_and_draw();
+	
+});
+/*
+function before_query_cloudant(){
+	if(limit==-1){
+		delete cloudant_query.limit;
+	}else{
+		cloudant_query.limit = limit;
+	}
+	
+	cloudant_query.skip = page*limit ;
+	
+	$("#select").val(limit);
+	
+	if( $("#till_time").val()!="" || $("#from_time").val()!=""){
+		if($("#till_time").val()!="" && $("#from_time").val()!=""){
+			let from_time = new Date($("#from_time").val());
+			let till_time = new Date($("#till_time").val());
+			till_time.setDate(new Date(till_time).getDate()+1);
+			
+			if(cloudant_query["selector"]["timestamp"]==null){
+				cloudant_query["selector"]["timestamp"]={};
+			}
+			
+			
+			cloudant_query["selector"]["timestamp"]["$gt"] = from_time.getTime();
+			cloudant_query["selector"]["timestamp"]["$lt"] = till_time.getTime();
+			
+			if(!restrict_search || till_time - from_time<1000*60*60*24*8){	
+				
+			}else{
+				warningMsg("提示","單次查詢最長時間區間為七天");
+				return false;
+			}
+			
+		}else{
+			warningMsg("提示","日期請填寫完整");
+			return false;
+		}
+	}else{
+		delete cloudant_query["selector"]["timestamp"];
+		if(restrict_search){
+			warningMsg("提示","請填寫查詢區間");
+			return false;
+		}
+	}
+	return true;
+}*/
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Line對話表</title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+	
+	<link rel="stylesheet" href="/stylesheets/common.css">
+	<style>
+	th{
+		cursor: pointer;
+	}
+	th, td:nth-child(2),td:nth-child(6),td:nth-child(7),td:nth-child(8){
+		word-break: keep-all;
+	}
+	td:nth-child(4), td:nth-child(7){
+		word-break: break-all;
+	}
+	td:nth-child(2), td:nth-child(3),td:nth-child(6),td:nth-child(7){
+		text-align: left;
+	}
+	td:nth-child(3){
+		width:120px;
+		max-width:120px;
+		word-break: break-all;
+	}
+	a{
+		margin: 6px;
+	}
+	
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<div style='height:0px;'>
+		<a href="/?old=true">無時間資料</a><br><br>
+		<a href="/?distinct_msg=true">不重複對話</a><br><br>
+		<a href="/?usagelinechart=true">流量統計表</a><br><br>
+		<a href="/?usagelinechart_fadeout=true">流量統計表(8/1~8/5)</a><br><br>
+		<a href="/?usagelinechart_detail=true">流量統計表-細間格</a>
+		</div>
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'>Line對話表</span>
+			</div>
+			<div class="form-row" style=''>
+				<label for="">
+					<span class="block-label">起日</span>
+					<input type="text" id='from_time' class="input-date">
+				</label>
+				<div class="forward-mark"></div>
+				<label for="">
+					<span class="block-label">迄日</span>
+					<input type="text" id='till_time' class="input-date">
+				</label>
+			</div>
+			<div class="form-row">
+				<a href="#"  id='search_time' class="btn btn-darkblue btn-wide">查詢</a>
+			</div>
+			<div class="form-row">	
+			</div>
+		</div><!-- /.form-wrap -->
+	</div><!-- /.input-field-wrap -->
+
+	<div class="search-result-wrap" style="display:none;" >
+		<div class="result-table-func-wrap" >
+			<div class="result-item-display">
+				顯示
+				<select name="" id="select">
+					<option value="10">10</option>
+					<option value="20">20</option>
+					<option value="50">50</option>
+					<option value="100">100</option>
+					<!--option value="500">500</option-->
+					<option value="1000">1000</option>
+					<option value="5000">5000</option>
+					<!--option value="-1">所有</option-->
+				</select> 項結果
+			</div><!-- /.result-item-display -->
+			<div class="result-item-search">
+				<button id='last_page' class='my-button' onclick='page=page-1;fetch_and_draw();'>◀上一頁</button>
+				<span id='page_number' style='margin:0px 10px;'>1</span>
+				<button id='next_page' class='my-button' onclick='page=page+1;fetch_and_draw();'>下一頁▶</button>
+			</div><!-- /.result-item-search -->
+		</div><!-- /.result-table-func-wrap -->
+		<div id="table_container"></div>
+	</div><!-- /.search-result-wrap -->
+</div><!-- /.page-wrapper -->
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+<script type="text/javascript" src="/javascripts/common.js"></script>
+<script>
+
+let limit = 10;
+let page = 0;
+let restrict_search = 0;
+let cloudant_query =
+{
+	"selector": {
+		//"type": {
+		//	"$eq": "SendMessages"
+		//}
+		//,"timestamp": {
+		//	"$gt": new Date($("#from_time").val()).getTime(),
+		//	"$lt": new Date($("#till_time").val()).getTime()
+		//},
+	},
+	sort: [{"time": "desc"}],
+	//limit: 100,
+	//skip: 0
+};
+
+function fetch_and_draw(){
+	let can_search = before_query_cloudant();
+	if(!can_search){return;}
+	
+	console.log(JSON.stringify(cloudant_query,null,1));
+	loading();
+	/*let query_view_para = {
+		db_name : "line_test_cloudantDB",
+		table_name : "taipei_digital_after_watson",
+		view_name : "getDistinctMessage"
+	};
+	query_view( query_view_para, function(jsonData){
+		console.log(jsonData);
+	});*/
+	
+	let query_data_para = {
+		db_name : "line_prod_cloudantDB",
+		table : "taipei_digital_after_watson",
+		cloudant_query : JSON.stringify(cloudant_query),
+	};
+	
+	query_data( query_data_para, function(jsonData){
+		let dataArr = jsonData ;
+		$("#page_number").html(1+page);
+		$("#last_page").prop('disabled', page==0 );
+		$("#next_page").prop('disabled', dataArr.length!=limit );
+
+		let outputArr = dataArr.map(function(item,i){
+			let intentStr = item.watsonIntents[0]?(
+						"#"+item.watsonIntents[0].intent+"<br> "
+						 +"("+(item.watsonIntents[0].confidence+"").substring(0,5)+")"
+					):"";
+			let message_type = "";
+			message_type = item.doActions && item.doActions[0]
+								?item.doActions[0].type:"text";
+			let entityStr = item.watsonEntities[0]?
+					item.watsonEntities.map(function(e_item){
+						return "@"+e_item.entity+(e_item.value?":"+e_item.value:"");
+					}).join("<br>"):"";
+			//item.conversation_id.replace(/[-0-9]/g,"")
+			//console.log(hashCode(item.conversation_id));
+			return {
+				"-":i+1,
+				"人":"使用者-" + item.conversation_id.split("-")[0] + "-" + hashCode(item.conversation_id) /* +item.conversation_id.substr(-4,4)*/ ,
+				"說了":item.targetSays,
+				"得到回答":item.watsonSays,
+				"回答類型":"<a target='_blank' href='./images/lineMessageType/"+message_type+".png'><img src='./images/lineMessageType/"+message_type+"_lite.png' style='width:80px;'/>",
+				"意圖":intentStr,
+				"實體":entityStr,
+				//"發生錯誤":item.watsonError?item.watsonError:"",
+				"時間":item.time.replace(" ","<br>")
+			};
+			
+		});
+		
+		$("#table_container").html(plain_table(outputArr));
+		$(".search-result-wrap").show();
+		
+		loading('over');
+	});
+	
+	
+}
+$(function(){
+	
+	/*
+	if(getUrlParameter("id")){
+		if(cloudant_query["selector"]["type"] && cloudant_query["selector"]["type"]["$eq"]=="SendMessages"){
+			id_posi="sender";
+		}else{
+			id_posi="target";
+		}
+		cloudant_query["selector"][id_posi]={
+			"$eq": getUrlParameter("id")
+		}
+		limit=100;
+		fetch_and_draw();
+	}else{
+		$(".input-date").datepicker("setDate", new Date());
+	}
+	*/
+	$(".input-date").datepicker("setDate", new Date());
+	$(".input-date").keyup(function(e){
+		if(e.keyCode == 13){
+			$("#search_time").trigger("click");
+		}
+	});
+	
+	$("#search_time").click(function(e){
+		page = 0;
+		fetch_and_draw();
+	});
+	
+	$("#select").change(function() {
+		limit=+$(this).val();
+		page=0; 
+		fetch_and_draw();
+	});
+});
+
+function before_query_cloudant(){
+	if(limit==-1){
+		delete cloudant_query.limit;
+	}else{
+		cloudant_query.limit = limit;
+	}
+	
+	cloudant_query.skip = page*limit ;
+	
+	$("#select").val(limit);
+	
+	if( $("#till_time").val()!="" || $("#from_time").val()!=""){
+		if($("#till_time").val()!="" && $("#from_time").val()!=""){
+			let from_time = new Date($("#from_time").val());
+			let till_time = new Date($("#till_time").val());
+			till_time.setDate(new Date(till_time).getDate()+1);
+			
+			if(cloudant_query["selector"]["timestamp"]==null){
+				cloudant_query["selector"]["timestamp"]={};
+			}
+			
+			
+			cloudant_query["selector"]["timestamp"]["$gt"] = from_time.getTime();
+			cloudant_query["selector"]["timestamp"]["$lt"] = till_time.getTime();
+			
+			if(!restrict_search || till_time - from_time<1000*60*60*24*8){	
+				
+			}else{
+				warningMsg("提示","單次查詢最長時間區間為七天");
+				return false;
+			}
+			
+		}else{
+			warningMsg("提示","日期請填寫完整");
+			return false;
+		}
+	}else{
+		delete cloudant_query["selector"]["timestamp"];
+		if(restrict_search){
+			warningMsg("提示","請填寫查詢區間");
+			return false;
+		}
+	}
+	return true;
+}
+
+
+</script>
+</body>
+</html>

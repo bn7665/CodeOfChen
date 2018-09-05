@@ -44,7 +44,7 @@
 				<div style="position: relative;height:0px;width:100%;top:-120px;left: 50%;margin-left: -80px;width: 160px;">
 						<img src="https://s3-api.us-geo.objectstorage.softlayer.net/tytimage/LINE_images_test/lottery_page/TOYOTA_LOGO_OVAL.png" style='width: 160px;' alt="">
 				</div>
-				<h4 id='no-script'style='margin:auto;text-align:center;color:#c66;'>瀏覽器不支援JavaScript,請使用其他瀏覽器進行抽獎登記</h4>
+				<h4 id='no-script'style='margin:auto;text-align:center;color:#c66;'></h4>
 				<form style='display:none;' onsubmit="return false;" class="login100-form validate-form" action="/register_data" method="post">
 					
 					<span class="login100-form-title">
@@ -186,7 +186,7 @@ setCookieId('ToyotaCanvas', canvas.getCanvasFingerprint());
 				data : {
 					cookie_id : actCookieId,
 					canvas_fingerprint : canvas.getCanvasFingerprint(),
-					date_time : Date.now()
+					date_time : Math.floor(Date.now()/1000)
 				},
 				success: function(result) {
 					console.log("logLook");

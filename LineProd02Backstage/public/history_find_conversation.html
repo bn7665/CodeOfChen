@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>找某人對話</title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+	
+	<link rel="stylesheet" href="/stylesheets/common.css">
+	<style>
+	th{
+		cursor: pointer;
+		word-break: keep-all;
+	}
+	td{
+		min-width:40px;
+		padding:6px 8px;
+		text-align:right;
+	}
+	#table_container_who,#table_container_who td:nth-child(1){
+		word-break: keep-all;
+	}
+	#table_container_who td:nth-child(2){
+		word-break: break-all;
+		max-width:300px;
+		text-align:left;
+	}
+	
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<a href="/line_messages.html">Line對話紀錄</a>
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'>找某人對話</span><br>
+				資料時間:2018-08-01 00:00 ~ 2018-09-03 20:05<br>
+			</div>
+			<div class="form-row">
+				<label for="">
+					<span class="block-label">對話內容查詢</span>
+					<input id="text" type="text">
+				</label>
+				<button class="btn btn-darkblue" id="find_conversation" onclick="get_conversation_id()">查詢</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="search-result-wrap" style="display:none;" >
+		<table style=''><tr><td valign='top'>
+			<div id="table_container_who"></div>
+		</td><td valign='top'>
+			<div id="table_container_says"></div>
+		</td></tr><table>
+	</div>
+</div>
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+<script type="text/javascript" src="/javascripts/common.js"></script>
+<script type="text/javascript" src="/javascripts/off-line-query-data.js"></script>
+<script>
+function get_conversation_id(){
+	
+	let data = all_query_data;
+	let the_text = $("#text").val();
+	if(the_text.length==0){
+		alert("至少打一個字吧 不然就全列出來了QQ\n(是可以，不過阿本不喜歡)");
+		return;
+	}
+	loading();
+	console.log(the_text);
+	data = data.filter(function(item){
+		if(item.message.indexOf(the_text)!=-1){
+			return true;
+		}else{
+			return false;
+		}
+	});
+	
+	data = data.map(function(item){
+		return {"conversation_id": "<a href='#' onclick='get_conversation(\""+item.conversation_id+"\");'>"+item.conversation_id+"</a>"};
+	});
+	
+	$("#table_container_who").html("這些人說過: '"+the_text+"'<br>"+plain_table(data));
+	loading('over');
+}
+
+function get_conversation(the_conversation_id){
+	loading();
+	let data = all_query_data;
+	let the_text = $("#text").val();
+	console.log(the_text);
+	data = data.filter(function(item){
+		if(item.conversation_id==the_conversation_id){
+			return true;
+		}else{
+			return false;
+		}
+	});
+	data.sort(function(a,b){
+		return a.timestamp-b.timestamp;
+	});
+	data = data.map(function(item){
+		return {
+			"人": item.conversation_id,
+			"說了": item.message,
+			"時間": item.time,
+		};
+	});
+	
+	$("#table_container_says").html("這個人: '"+the_conversation_id+"' 說了這些話<br>"+plain_table(data));
+	loading('over');
+}
+
+$(function(){
+	$(".search-result-wrap").show();
+});
+
+</script>
+</body>
+</html>

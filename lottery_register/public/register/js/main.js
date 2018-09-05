@@ -42,7 +42,7 @@
 						custom_information:{
 							"name":$("input[name='username']").val()
 						},
-						date_time : Date.now()
+						date_time : Math.floor(Date.now()/1000)
 					},
 					success: function(result) {
 						console.log("logButton");
@@ -61,6 +61,7 @@
 						timestamp : Date.now()
 					},
 					success: function(result) {
+						console.log("hello?");
 						console.log(result);
 						let height = $("form").height();
 						if(result=="success"){

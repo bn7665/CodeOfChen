@@ -12,6 +12,8 @@ var query_data = require('./routes/query_data');
 var query_view = require('./routes/query_view');
 
 var lineManageWeb = require('./routes/line_manage_web');
+var response_time = require('./routes/response_time');
+var response_time_ytff = require('./routes/response_time_ytff');
 var app = express();
 
 // view engine setup
@@ -30,7 +32,8 @@ app.use('/', lineManageWeb);
 app.use('/users', users);
 app.use('/query_data', query_data);
 app.use('/query_view', query_view);
-
+app.use('/response_time', response_time);
+app.use('/response_time_ytff', response_time_ytff);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');

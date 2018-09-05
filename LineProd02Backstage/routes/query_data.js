@@ -42,7 +42,7 @@ router.post('/', function(req, res, next) {
 	logger.log("query_nosql",query_nosql);
 	let flatten_result = [];
 	cloudant_table.find(query_nosql, function(err, result) {
-		console.log(err);
+		//console.log(err);
 		if (!err) {
 			logger.log("result.docs.length: " + result.docs.length);
 			res.send(JSON.stringify(result.docs));
