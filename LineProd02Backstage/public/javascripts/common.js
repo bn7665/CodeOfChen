@@ -173,6 +173,7 @@ function UUID(){
 		return v.toString(16);
 	});
 }
+
 function addCommas(num) {
 	num = num + "";
 	var re = /(-?\d+)(\d{3})/
@@ -182,3 +183,15 @@ function addCommas(num) {
 	return num;
 }
 
+function html_escape(str){
+	let retStr = ""
+	if(typeof str !="string"&& typeof str !="number"){
+		retStr = JSON.stringify(str,null,4);
+	}else if(str ==null){
+		retStr = "";
+	}else{
+		retStr = str+"";
+	}
+	retStr = retStr.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>").replace(/\t/g,"&nbsp;&nbsp;&nbsp;&nbsp;").replace(/    /g,"&nbsp;&nbsp;&nbsp;&nbsp;");
+	return retStr
+}

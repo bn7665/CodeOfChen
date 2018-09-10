@@ -13,13 +13,13 @@ body {
 	position:absolute;
 	border:1px solid #333;
 	background:#f7f5d1;
-	padding:6px 8px;
+	padding:3px;
 	color:#333;
 	display:none;
 	z-index:10010;
-	min-width:120px; 
+	min-width:220px; 
 	word-break:keep-all;
-	line-height:22px;
+	line-height:14px;
 	text-align:left;
 	border-radius:2px;
 	opacity:0.9;
@@ -28,41 +28,4 @@ body {
 	text-align:left;
 	margin:0 auto;
 	width:100%; 
-}
-/* Table */
-table {
-    border-collapse: collapse;
-    border-spacing: 0;
-}
-table.result-table {
-    border: 1px solid #ccc;
-    font-size: 13px;
-    width: 100%;
-}
-table.result-table tr {
-    background: #eee;
-}
-table.result-table tr:nth-child(2n+1) {
-    background: #fff;
-}
-
-table.result-table tr:nth-child(2n+1):hover {
-    background: #d8d8d8;
-}
-table.result-table tr:nth-child(2n):hover {
-    background: #ddd;
-}
-
-table.result-table th {
-    background: #194A6B;
-    border-bottom: 2px solid #62E0E9;
-    color: #fff;
-}
-table.result-table th, table.result-table td {
-    /*border: 1px solid #aaa;*/
-    padding: 10px;
-}
-table.result-table td {
-    border: 1px solid #ddd;
-	padding:6px 16px;
 }

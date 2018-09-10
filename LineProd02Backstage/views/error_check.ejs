@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Lineapi_error 錯誤訊息</title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+	<!--link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css"-->
+	<link rel="stylesheet" href="/stylesheets/common.css">
+	<style>
+	th{
+		cursor: pointer;
+	}
+	th, td:nth-child(1),td:nth-child(2),td:nth-child(3),td:nth-child(4){
+		word-break: keep-all;
+	}
+	td:nth-child(5){
+		word-break: break-all;
+		width:360px;
+	}
+	 td:nth-child(6){
+		word-break: break-all;
+		width:700px;
+	}
+	td:nth-child(4){
+		max-width:200px;
+	}
+	.title{
+		text-align:center;
+		font-size:1.5em;
+		margin-bottom:6px;
+	}
+	
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<div style='height:0px;'>
+		<a href="/">主目錄</a>
+		</div>
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'>Lineapi_error 錯誤訊息</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="search-result-wrap" style="display:none;" >
+		<div class='title' id='data_amount'>共0筆</div>
+		<div id="table_container"></div>
+	</div>
+</div>
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<!--script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script-->
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+<script type="text/javascript" src="/javascripts/common.js"></script>
+<script>
+
+function fetch_and_draw(){
+
+	let query_data_para = {
+		db_name : "line_prod_cloudantDB",
+		table : "lineapi_error",
+		cloudant_query : JSON.stringify({"selector":{},"sort":[{"timestamp":"desc"}]}),
+	};
+	
+	query_data( query_data_para, function(jsonData){
+		let dataArr = jsonData ;
+		console.log(jsonData);
+		$("#data_amount").html("共 "+dataArr.length+" 筆");
+		let outputArr = dataArr.map(function(item,i){	
+			return {
+				"-":i+1,
+				"類型":item.type,
+				"時間":item.time,
+				"錯誤訊息":item.error&&item.error.message?html_escape(item.error.message):"",
+				"錯誤物件":html_escape(item.error),
+				"request物件":html_escape(item.req_para)
+			};
+		});
+		
+		$("#table_container").html(plain_table(outputArr));
+		$("#table_container td").attr("valign","top");
+		//$("#table_container table").DataTable();
+		$(".search-result-wrap").show();
+		
+		loading('over');
+	});
+}
+
+$(function(){
+	fetch_and_draw();
+});
+
+</script>
+</body>
+</html>

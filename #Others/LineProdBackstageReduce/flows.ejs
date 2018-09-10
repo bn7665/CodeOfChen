@@ -2,10 +2,9 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>小時流量統計表</title>
+	<title>流量統計表</title>
 	
 	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
-	<link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css">
 	<link rel="stylesheet" href="/stylesheets/styles.css">
 	
 	<link rel="stylesheet" href="/stylesheets/common.css">
@@ -13,37 +12,9 @@
 	th{
 		cursor: pointer;
 	}
-	/*
-	th, td:nth-child(2),td:nth-child(6),td:nth-child(7),td:nth-child(8){
-		word-break: keep-all;
-	}
-	td:nth-child(4), td:nth-child(7){
-		word-break: break-all;
-	}
-	td:nth-child(2), td:nth-child(3),td:nth-child(6),td:nth-child(7){
-		text-align: left;
-	}
-	td:nth-child(3){
-		width:120px;
-		max-width:120px;
-		word-break: break-all;
-	}*/
-	a{
-		margin: 6px;
-	}
-	
-	#table_container table{
-		width:260px;
-	}
-	
 	.line_blue {
 		fill: none;
 		stroke: steelblue;
-		stroke-width: 2px;
-	}
-	.line_purple {
-		fill: none;
-		stroke: #DA70D6;
 		stroke-width: 2px;
 	}
 	.search-result-wrap {
@@ -54,13 +25,26 @@
         position:absolute;
         border:1px solid #333;
         background:#f7f5d1;
-        padding:3px;
         color:#333;
         display:none;
+		line-height:20px;
         z-index:10010;
-        min-width:220px; 
+        min-width:180px; 
 		word-break:keep-all;
+		padding:12px 20px;
 	}
+	#tooltip div{
+		padding:6px 12px;
+	}
+	
+	#daily_flow td:nth-child(2){
+		text-align:right;
+	}
+	.title{
+		font-size:1.5em;
+		margin-bottom:6px;
+	}
+	
 	</style>
 </head>
 <body>
@@ -69,7 +53,7 @@
 		<a href="/">主目錄</a>
 		<div class="form-wrap">
 			<div class="form-row">
-				<span class='my-title'>小時流量統計表</span>
+				<span class='my-title'>流量統計表</span>
 			</div>
 			<div class="form-row" style=''>
 				<label for="">
@@ -90,20 +74,49 @@
 		</div><!-- /.form-wrap -->
 	</div><!-- /.input-field-wrap -->
 
-	<div class="search-result-wrap" >
-		<div id="chart_container" style="text-align:center;"></div>
-		<div id="statistic_div" style="text-align:center;"></div>
-		
-	</div><!-- /.search-result-wrap -->
-</div><!-- /.page-wrapper -->
+	<div class="search-result-wrap">
+		<table style="margin:auto;">
+			<tr>
+				<td valign="top">
+					<div id="daily_flow" style="text-align:center;"></div>
+				</td><td>
+					<div id="chart_container" style="text-align:center;"></div>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<div id="statistic_div" style="text-align:center;"></div>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
 
 <script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
 <script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="/javascripts/scripts.js"></script>
 <script type="text/javascript" src="/javascripts/d3.v4.min.js"></script>
 <script type="text/javascript" src="/javascripts/common.js"></script>
 <script>
+
+function fetch_daily_data(){
+	let query_line_view_para = {
+		db_name : "line_prod_cloudantDB",
+		table_name : "lineapi_log",
+		view_name : "getFlows"
+	};
+	
+	query_view(query_line_view_para,function(result){
+		console.log(result);
+		data_to_draw = result.map(function(item,i){
+			return {
+				"日期":formatDayStr(item.key).split(" ")[0],
+				"人次":item.value
+			};
+		});
+		$("#daily_flow").html("<div class='title'>分日人次</div>"+plain_table(data_to_draw));
+	});
+}
 
 function fetch_and_draw(){
 	let query_line_view_para = {
@@ -129,7 +142,7 @@ function fetch_and_draw(){
 				"人次":item.value
 			}
 		})
-		$("#statistic_div").html(plain_table(hour_flow_data));
+		$("#statistic_div").html("<div class='title'>分時人次</div>"+plain_table(hour_flow_data));
 		$(".search-result-wrap").show();
 		
 		let data_to_draw = result.map(function(item,i){
@@ -151,7 +164,7 @@ function formatDayStr(timestamp){
 $(function(){
 	$(".input-date").datepicker("setDate", new Date());
 	fetch_and_draw();
-	
+	fetch_daily_data();
 	$(".input-date").change(function(e){
 		fetch_and_draw();
 	});
@@ -162,22 +175,16 @@ function draw_line_chart(jsonDataLine){
     width = 960 - margin.left - margin.right,
     height = 460 - margin.top - margin.bottom;
 
-	// parse the date / time
 	var parseTime = d3.timeParse("%Y-%m-%d %H:%M:%S");
 
-	// set the ranges
 	var x = d3.scaleTime().range([0, width]);
 	var y = d3.scaleLinear().range([height, 0]);
 
-	// define the line
 	var valueline = d3.line()
 		.x(function(d) { return x(d.time); })
 		.y(function(d) { return y(d.value); })
 		.curve(d3.curveCardinal);
 
-	// append the svg obgect to the body of the page
-	// appends a 'group' element to 'svg'
-	// moves the 'group' element to the top left margin
 	var svg = d3.select("#chart_container").append("svg")
 		.attr("width", width + margin.left + margin.right)
 		.attr("height", height + margin.top + margin.bottom)
@@ -241,29 +248,16 @@ function draw_line_chart(jsonDataLine){
 		.attr("newtitle" , function(data){
 			return "平台: LINE<br>"
 					+"時間: "+formatDayStr(data.key)+"<br>"
-					+ "流量: "+data.value;
+					+"流量: "+data.value;
 		})
 		.attr("class","tips");
 	  
-	/*svg.append("g").selectAll("rect")
-	  .data(jsonData)
-	  .enter().append("svg:rect")
-	  .attr("class","tips")
-	  .attr("newtitle", function(d) { return "hello"; })
-	  .attr("x", function(d) { return x(d.time)-20; })
-	  .attr("y", function(d) {return 0;})
-	  .attr("height", function(d) { return height;})
-	  .attr("width", function(d) { return 40; })
-	  .attr("fill",function(d) { return "rgba(0,0,0,0.2)" ;});*/
 	tooltip("tips");
 }
 
 function tooltip(clas){
 	
 	$("."+clas).css("z-index","2").mouseover(function(e){
-		//console.log($(this).attr("newtitle"));
-		//$(this).attr("newTitle",$(this).attr("title"));
-		//$(this).attr("title","");
 		var tooltip = "<div id='tooltip' style='padding:5px;'><div style:'margin:0 auto;'>"+ $(this).attr("newTitle") +"</div><\/div>";
 		$("body").append(tooltip);
 		$("#tooltip").css({"top": (e.pageY+20) + "px","left": (e.pageX+10)  + "px"}).show();//"fast");
