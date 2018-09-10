@@ -137,6 +137,7 @@ function fetch_and_draw(){
 	};
 	
 	query_data( query_data_para, function(jsonData){
+		console.log(jsonData);
 		let dataArr = jsonData ;
 		$("#page_number").html(1+page);
 		$("#last_page").prop('disabled', page==0 );
@@ -161,7 +162,7 @@ function fetch_and_draw(){
 				"人":"使用者-" + (item.watsonConversation_id==""?"UNKNOWN":item.watsonConversation_id),
 				"說了":item.input,
 				"得到回答":item.outputStr,
-				"回答類型":"<a target='_blank' href='./images/lineMessageType/"+message_type+".png'><img src='./images/lineMessageType/"+message_type+"_lite.png' style='width:80px;'/>",
+				"回答類型":"",//"<a target='_blank' href='./images/lineMessageType/"+message_type+".png'><img src='./images/lineMessageType/"+message_type+"_lite.png' style='width:80px;'/>",
 				"意圖":intentStr,
 				"實體":entityStr,
 				"時間":item.time.replace(" ","<br>")

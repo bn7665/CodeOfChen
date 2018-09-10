@@ -1,8 +1,6 @@
 
 (function ($) {
     "use strict";
-	$('#no-script').remove();
-	$('form').show();
     
     /*==================================================================
     [ Validate ]*/
@@ -28,6 +26,7 @@
 		}
 		
 		if(check){
+			/*
 			setTimeout(function(){
 				$.ajax({
 					type : "POST",
@@ -73,13 +72,6 @@
 							setTimeout(function(){
 								window.location.href = "https://www.youtubefanfest.com/event/2018-tw";
 							},2000);
-							
-						/*}else if(result=="duplicate username"){
-							$("form").html("<div style='text-align:center;height:"+height+"px'>"
-								+"<h3>您的姓名已經登記過囉</h3><br>"
-								+"<h4>請勿重複登記</h4><br>"
-								+"<a href='/'><h4>我想幫我家人登記</h4></a>"
-								+"</div>");*/
 						}else if(result=="duplicate telphone"){
 							$("form").html("<div style='text-align:center;height:"+height+"px'>"
 								+"<h3>該電話已經被登記過囉</h3><br>"
@@ -101,6 +93,7 @@
 					}
 				});
 			},100);
+			*/
 		}
 		
         return false;

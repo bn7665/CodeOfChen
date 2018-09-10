@@ -44,9 +44,12 @@
 				<div style="position: relative;height:0px;width:100%;top:-120px;left: 50%;margin-left: -80px;width: 160px;">
 						<img src="https://s3-api.us-geo.objectstorage.softlayer.net/tytimage/LINE_images_test/lottery_page/TOYOTA_LOGO_OVAL.png" style='width: 160px;' alt="">
 				</div>
-				<h4 id='no-script'style='margin:auto;text-align:center;color:#c66;'></h4>
-				<form style='display:none;' onsubmit="return false;" class="login100-form validate-form" action="/register_data" method="post">
-					
+				<form style='' onsubmit="return false;" class="login100-form validate-form" action="/register_data" method="post">
+					<div style='text-align:center;height:300px;'>
+							<h3>◤登記抽獎結束囉◢</h3><br>
+							<h4>感謝您的熱情參與</h4><br>
+					</div>
+					<!--
 					<span class="login100-form-title">
 						TOYOTA YTFF 抽獎登記
 					</span>
@@ -89,6 +92,7 @@
 							我要抽獎
 						</button>
 					</div>
+					-->
 				</form>
 			</div>
 		</div>
@@ -106,8 +110,9 @@
 	<!--script src="vendor/select2/select2.min.js"></script-->
 <!--===============================================================================================-->
 	<!--script src="vendor/tilt/tilt.jquery.min.js"></script-->
-	<script src="js/canvas.min.js"></script>
+	<!--script src="js/canvas.min.js"></script-->
 	<script>
+/*
 function GetCookie (name) { 
 	var arg = name + "="; 
 	var alen = arg.length; 
@@ -172,13 +177,14 @@ setCookieId('ToyotaCookieId', actCookieId);
 var canvas = new Canvas();
 // set ToyotaCanvas to cookie
 setCookieId('ToyotaCanvas', canvas.getCanvasFingerprint());
-
+*/
 </script>
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	
 	<script >
 		$(function(){
+		/*
 			$.ajax({
 				type : "POST",
 				url : "/ht_trace_log",
@@ -193,8 +199,7 @@ setCookieId('ToyotaCanvas', canvas.getCanvasFingerprint());
 					console.log(result);
 				}
 			});
-			//$('#no-script').remove();
-			//$('form').show();
+		*/
 		})
 	</script>
 </body>

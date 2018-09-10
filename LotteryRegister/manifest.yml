@@ -1,6 +1,6 @@
 applications:
 - path: .
-  memory: 1G
-  instances: 2
+  memory: 256M
+  instances: 1
   name: YTFF-register-test
-  disk_quota: 512M
+  disk_quota: 256M

@@ -1,6 +1,7 @@
 node_modules/
 configs.js
 package-lock.json
+cmd.txt
 
 # Logs
 logs
