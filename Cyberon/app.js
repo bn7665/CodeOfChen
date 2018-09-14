@@ -10,6 +10,9 @@ var usersRouter = require('./routes/users');
 var my_ip = require('./routes/my_ip');
 var stt_service = require('./routes/stt_service');
 var tts_service = require('./routes/tts_service');
+var mp4_to_wav = require('./routes/mp4_to_wav');
+var wav_to_mp4 = require('./routes/wav_to_mp4');
+
 
 var app = express();
 
@@ -27,6 +30,9 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/stt_service', stt_service);
 app.use('/tts_service', tts_service);
+app.use('/mp4_to_wav', mp4_to_wav);
+app.use('/wav_to_mp4', wav_to_mp4);
+
 app.use('/my_ip', my_ip);
 
 // catch 404 and forward to error handler

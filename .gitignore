@@ -2,7 +2,8 @@ node_modules/
 configs.js
 package-lock.json
 cmd.txt
-
+Private*
+FB_history_format.js 
 # Logs
 logs
 *.log

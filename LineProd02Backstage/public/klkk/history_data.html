@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="/stylesheets/styles.css">
 	
 	<link rel="stylesheet" href="/stylesheets/common.css">
+	<script type="text/javascript" src="/javascripts/off-line-data.js"></script>
 	<style>
 	th{
 		cursor: pointer;
@@ -74,7 +75,7 @@
 <script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="/javascripts/scripts.js"></script>
 <script type="text/javascript" src="/javascripts/common.js"></script>
-<script type="text/javascript" src="/javascripts/off-line-data.js"></script>
+
 <script>
 
 function draw_day_times_tai(){
@@ -177,13 +178,26 @@ function draw_distinct_message_raw(){
 	});
 	$("#distinct_message_2_container").html("資料2<br>"+plain_table(distinct_message_zhTW));
 }
-
+function check_data_ready(){
+	if($("#day_times_1_container").html().length
+		*$("#day_times_1_container").html().length
+		*$("#day_times_1_container").html().length
+		*$("#day_times_1_container").html().length==0
+	){
+		setTimeout(function() {
+			check_data_ready();
+		}, 1000);
+	}else{
+		$(".search-result-wrap").show();
+		loading('over');
+	}
+}
 $(function(){
-	
+	loading();
+	check_data_ready();
 	setTimeout(function(){
 		draw_day_times_tai();
 		draw_distinct_message_tai();
-		$(".search-result-wrap").show();
 	});
 	draw_day_times_raw();
 	draw_distinct_message_raw();

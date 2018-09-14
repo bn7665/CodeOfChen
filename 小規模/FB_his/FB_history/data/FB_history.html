@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>FB歷史資料</title>
+	
+	<link rel="stylesheet" href="./stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="./stylesheets/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="./stylesheets/styles.css">
+	<link rel="stylesheet" href="./stylesheets/common.css">
+
+	<style>
+	.my-title{
+		font-size: 30px;
+	}
+	.my-button{
+		padding: 3px 8px;
+	}
+	th{
+		cursor: pointer;
+	}
+	td:nth-child(1){
+		width:60px;
+	}
+	td:nth-child(2){
+		width:180px;
+	}
+	td:nth-child(3){
+		max-width:500px;
+		
+	}
+	td:nth-child(4){
+		width:80px;
+	}
+	td:nth-child(5){
+		width:40px;
+	}
+	
+	/*th, td:nth-child(2),td:nth-child(3),td:nth-child(5),td:nth-child(6){
+		word-break: keep-all;
+	}*/
+	
+	.fake_thead{
+		vertical-align: bottom;
+		font-size: 24px;
+	}
+	.result-table-func-wrap{
+		text-align:center;
+	}
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'>FB歷史資料</span>
+			</div>
+			<!--div class="form-row">
+				<label for="">
+					<span class="block-label">things</span>
+					<input type="text">
+				</label>
+				<a href="#" class="btn btn-darkblue">查詢</a>
+			</div-->
+			<div class="form-row" style='display:none;'>
+				<label for="">
+					<span class="block-label">起日</span>
+					<input type="text" id='from_time' class="input-date">
+				</label>
+				<div class="forward-mark"></div>
+				<label for="">
+					<span class="block-label">迄日</span>
+					<input type="text" id='till_time' class="input-date">
+				</label>
+			</div>
+			<div class="form-row" style='display:none;'>
+				<a href="#"  id='search_time' class="btn btn-darkblue btn-wide">查詢</a>
+			</div>
+			<div class="form-row">	
+			</div>
+		</div><!-- /.form-wrap -->
+	</div><!-- /.input-field-wrap -->
+	<div class="search-result-wrap-loading" style='text-align:center;margin-top: 100px;font-family: "Microsoft JhengHei";'>
+        <h3>資料處理中，請稍後...</h3>
+    </div>
+	<div class="search-result-wrap" style='display:none;'>
+		<div class="result-table-func-wrap">
+			<span class='fake_thead' id='data_amount'>共222,717筆</span>
+			<span class='fake_thead' id='data_focus'></span>
+			<div class="result-item-display">
+				顯示
+				<select name="" id="select">
+					<option value="100">100</option>
+					<option value="500">500</option>
+					<option value="1000">1000</option>
+					<option value="3000">3000</option>
+					<option value="20000">20000</option>
+				</select> 項結果
+			</div><!-- /.result-item-display -->
+			<div class="result-item-search">
+				<button id='last_page' class='my-button' onclick='page=page-1;redraw();'>◀上一頁</button>
+				<span id='page_number' style='margin:0px 10px;'>1</span>
+				<button id='next_page' class='my-button' onclick='page=page+1;redraw();'>下一頁▶</button>
+			</div><!-- /.result-item-search -->
+		</div><!-- /.result-table-func-wrap -->
+		<div id="table_container"></div>
+	</div><!-- /.search-result-wrap -->
+</div><!-- /.page-wrapper -->
+
+<script type="text/javascript" src="./javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="./javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="./javascripts/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="./javascripts/scripts.js"></script>
+<script type="text/javascript" src="./javascripts/common.js"></script>
+<script type="text/javascript" src="./FB_history_format.js"></script>
+
+<script>
+
+let limit = 100;
+let page = 0;
+
+
+function redraw(){
+	//console.log(FB_history_data);
+	//loading();
+	$(".search-result-wrap-loading").show();
+	$(".search-result-wrap").hide();
+	let data = FB_history_data;
+	
+	let outputArr = [];
+	for(let i=page*limit;i<data.length && i<(page+1)*limit;i++){
+		let item = data[i];
+		outputArr.push({
+			"-": i+1,
+			"人":item.from,
+			"說了":item.message,
+			"時間":item.time,
+			"後台":"<a href='https://www.facebook.com/TOYOTA.Taiwan/messages/?threadid="+item.target_id.replace("t_","")+"'>後台</a>"
+			
+		});
+	}
+	
+	$("#data_amount").html("共"+data.length+"筆");
+	$("#page_number").html(1+page);
+	$("#last_page").prop('disabled', page==0 );
+	$("#next_page").prop('disabled', outputArr.length!=limit );
+	
+	$("#table_container").html(plain_table(outputArr));
+	$(".search-result-wrap-loading").hide();
+	$(".search-result-wrap").show();
+	/*setTimeout(function(){
+		loading('over');
+	},200);*/
+}
+$(function(){
+	FB_history_data = FB_history_data.docs.filter(function(item){return item.from!="TOYOTA Taiwan"&&item.message!="";});
+
+	redraw();
+	
+	$("#select").change(function(e){
+		limit = $("#select").val();
+		page = 0;
+		redraw();
+	});
+	
+});
+</script>
+</body>
+</html>

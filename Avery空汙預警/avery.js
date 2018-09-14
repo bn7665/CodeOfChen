@@ -50,6 +50,43 @@ function tooltip(clas){
 
 }
 
+function plain_table(obj,name){
+	var html ="";
+	var data_name = name?name:"";
+	if(Array.isArray(obj)){
+		if(obj.length==0){
+			
+			warningMsg("警告",data_name+" 無資料");
+		}else{
+			let obj_keys = Object.keys(obj[0])
+			html += "<table id='table' class='result-table'><thead><tr>";
+			for(let i=0; i<obj_keys.length; i++) {
+				html += '<th>' + obj_keys[i] + '</th>';
+			}
+			html += "</tr></thead><tbody>";
+			
+			for(let i=0; i<obj.length; i++) {
+				html += "<tr>";
+				for(let j=0; j<obj_keys.length; j++) {
+					html += '<td>' + obj[i][obj_keys[j]] + '</td>';
+				}
+				html += "</tr>";
+			}
+			html += "</tbody></table>";
+		}	
+	}else{
+		warningMsg("警告",data_name+" 錯誤");
+	}
+	return html;
+
+}
+
+function b64EncodeUnicode(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode('0x' + p1);
+    }));
+}
+
 function loading(str){
 
 	if(!window.loading_count){
@@ -66,7 +103,7 @@ function loading(str){
 	
 	if($("#loading").length==0){
 		$("body").append('<div id="loading" style="display: none;padding:15px;">'
- 			+(window.loading_with_pic?'<img src="./images/loading.gif">':'<div>鞈��霈��碶葉嚗諹�蝔滚�仮�把�把��</div>')
+ 			+(window.loading_with_pic?'<img src="./images/loading.gif">':'<div>資料讀取中，請稍候．．．</div>')
 			+'</div>');
 	}
 	if(str!=null && str!="now"){
@@ -97,55 +134,555 @@ function loading(str){
 	}
 }
 
+const topo_taiwan = {"type":"Topology","objects":{"county":{"type":"GeometryCollection","bbox":[116.7062384090001,20.697301579000055,124.56114950000006,26.385278129000085],"geometries":[{"type":"MultiPolygon","properties":{"OBJECTID":1,"Area":29735060.5483,"County_ID":"09007","C_Name":"連江縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"台北區"},"arcs":[[[0]]]},{"type":"MultiPolygon","properties":{"OBJECTID":2,"Area":185005359.138,"County_ID":"09020","C_Name":"金門縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"台北區"},"arcs":[[[1]],[[2]]]},{"type":"MultiPolygon","properties":{"OBJECTID":3,"Area":2201426268.76,"County_ID":"10002","C_Name":"宜蘭縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"台北區"},"arcs":[[[3,4,5,6,7,8]]]},{"type":"Polygon","properties":{"OBJECTID":4,"Area":1411565106.52,"County_ID":"10004","C_Name":"新竹縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"北區"},"arcs":[[-7,9,10,11,12,13]]},{"type":"Polygon","properties":{"OBJECTID":5,"Area":1826676683.67,"County_ID":"10005","C_Name":"苗栗縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"北區"},"arcs":[[-11,14,15,16]]},{"type":"Polygon","properties":{"OBJECTID":6,"Area":1244549081.72,"County_ID":"10007","C_Name":"彰化縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"中區"},"arcs":[[17,18,19,20]]},{"type":"Polygon","properties":{"OBJECTID":7,"Area":4097754662.36,"County_ID":"10008","C_Name":"南投縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"中區"},"arcs":[[21,22,23,24,-19,25]]},{"type":"MultiPolygon","properties":{"OBJECTID":8,"Area":1399574918.65,"County_ID":"10009","C_Name":"雲林縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"南區"},"arcs":[[[26]],[[-25,27,28,-20]]]},{"type":"MultiPolygon","properties":{"OBJECTID":9,"Area":1952762204.55,"County_ID":"10010","C_Name":"嘉義縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"南區"},"arcs":[[[-24,29,30,31,-28],[32]]]},{"type":"MultiPolygon","properties":{"OBJECTID":10,"Area":2805016552.2,"County_ID":"10013","C_Name":"屏東縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"高屏區"},"arcs":[[[33,34,35]]]},{"type":"MultiPolygon","properties":{"OBJECTID":11,"Area":3581832603.27,"County_ID":"10014","C_Name":"臺東縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"東區"},"arcs":[[[36]],[[37]],[[38,-34,39,40]]]},{"type":"Polygon","properties":{"OBJECTID":12,"Area":4605695449.58,"County_ID":"10015","C_Name":"花蓮縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"東區"},"arcs":[[41,-41,42,-22,43,-5]]},{"type":"MultiPolygon","properties":{"OBJECTID":13,"Area":135223749.493,"County_ID":"10016","C_Name":"澎湖縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"高屏區"},"arcs":[[[44]],[[45]]]},{"type":"MultiPolygon","properties":{"OBJECTID":14,"Area":137570190.544,"County_ID":"10017","C_Name":"基隆市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"台北區"},"arcs":[[[46,47]]]},{"type":"Polygon","properties":{"OBJECTID":15,"Area":124389934.739,"County_ID":"10018","C_Name":"新竹市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"北區"},"arcs":[[-17,48,-12]]},{"type":"Polygon","properties":{"OBJECTID":16,"Area":59722166.0789,"County_ID":"10020","C_Name":"嘉義市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"南區"},"arcs":[[-33]]},{"type":"Polygon","properties":{"OBJECTID":17,"Area":269847319.981,"County_ID":"63","C_Name":"臺北市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"台北區"},"arcs":[[49]]},{"type":"MultiPolygon","properties":{"OBJECTID":18,"Area":2995099782.37,"County_ID":"64","C_Name":"高雄市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制","A_Name":"高屏區"},"arcs":[[[-43,-40,-36,50,51,-30,-23]]]},{"type":"Polygon","properties":{"OBJECTID":19,"Area":2066260788.66,"County_ID":"65","C_Name":"新北市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制","A_Name":"台北區"},"arcs":[[-47,52,-9,53,54],[-50]]},{"type":"Polygon","properties":{"OBJECTID":20,"Area":2239785479.54,"County_ID":"66","C_Name":"臺中市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制","A_Name":"中區"},"arcs":[[-44,-26,-18,55,-15,-10,-6]]},{"type":"Polygon","properties":{"OBJECTID":21,"Area":2258815738.57,"County_ID":"67","C_Name":"臺南市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制","A_Name":"南區"},"arcs":[[-52,56,-31]]},{"type":"Polygon","properties":{"OBJECTID":22,"Area":1217223234.53,"County_ID":"68","C_Name":"桃園市","Add_Date":"2014-12-24T16:00:00.000Z","Add_Accept":"內政部102年5月31日台內民字第1020216023號令","Remark":"桃園升格","A_Name":"北區"},"arcs":[[-54,-8,-14,57]]}]}},"arcs":[[[4087,9630],[61,-15],[-31,-42],[-40,2],[10,55]],[[1963,6607],[22,-49],[-67,-32],[21,75],[24,6]],[[2170,6740],[28,-11],[54,-126],[-25,-65],[-91,32],[-47,-28],[-35,-59],[-53,49],[31,44],[-22,65],[32,37],[66,-43],[62,105]],[[6695,7533],[-52,-24],[-94,-139],[-27,-71],[-16,-145],[44,-245],[28,-54],[-1,-116],[-39,-19],[22,-63],[-73,-85],[-36,-212]],[[6451,6360],[-124,39],[-58,58],[1,-60],[-82,-32],[-27,34],[-61,3],[-60,44]],[[6040,6446],[-18,32],[-82,-25],[-59,56],[-11,73]],[[5870,6582],[36,76],[70,77],[3,111]],[[5979,6846],[29,20],[42,123],[27,1]],[[6077,6990],[71,25],[75,89],[-3,86],[43,37],[80,13],[52,69],[40,2],[39,76],[78,45],[-11,60],[154,41]],[[5870,6582],[-75,-7]],[[5795,6575],[3,31],[-58,106],[-59,-22],[-59,12],[-66,-21],[11,76],[-23,29],[27,56],[-96,96],[-53,72],[13,38],[-52,10]],[[5383,7058],[12,58],[62,62],[51,-34],[-16,71],[-46,50],[-76,43]],[[5370,7308],[73,149]],[[5443,7457],[71,12],[27,-70],[61,-36],[62,-11],[-7,-63],[89,-76],[28,15],[22,-49],[53,-33],[-1,-121],[68,-46],[12,-114],[51,-19]],[[5795,6575],[-34,-95],[-45,22],[-36,-62],[-172,-111],[-42,61],[-84,18],[-29,-85],[-99,-8],[-34,46],[-55,17],[-89,72],[-92,130]],[[4984,6580],[54,76],[66,206],[76,106],[61,20],[65,116]],[[5306,7104],[41,4],[36,-50]],[[4773,6169],[62,-27],[52,-132],[81,-26],[22,-126],[67,-27]],[[5057,5831],[-53,-13],[11,-78],[-31,-164],[10,-65],[69,-54],[-55,-28]],[[5008,5429],[-111,27],[-55,-2],[-98,52],[-159,-16],[-66,23],[-47,58]],[[4472,5571],[48,57],[31,93],[66,109],[7,80],[56,48],[41,146],[52,65]],[[5901,6199],[10,-42],[-81,-39],[-6,-74],[59,-37],[-8,-57],[-50,-48],[-29,-108],[23,-50],[-11,-142],[-39,-77],[-14,-100],[-27,-15],[45,-115],[-7,-85],[-29,-109],[-77,-22],[-23,-127],[-84,7],[-39,-77],[17,-43],[-46,-26]],[[5485,4813],[-21,46],[-53,13]],[[5411,4872],[-58,13],[-92,-10],[-40,132],[23,70],[-18,27],[-103,18]],[[5123,5122],[-90,-1],[-39,45],[24,82],[-10,84],[19,7],[-19,90]],[[5057,5831],[88,-27],[103,127],[8,81],[23,12],[47,-48],[79,54],[51,-12],[23,52],[53,7],[56,67],[52,6],[39,51],[15,-22],[95,53],[112,-33]],[[4295,4968],[-24,-59],[-82,-42],[106,101]],[[5123,5122],[6,-71],[-81,12],[-29,27],[-90,-18],[-54,21],[-41,72],[-92,-30],[-38,14],[-144,-114],[-26,-55],[-60,-45],[-96,29]],[[4378,4964],[-8,164],[-28,21],[66,233],[-16,44],[65,95],[15,50]],[[5411,4872],[-60,-19],[-78,-66],[-29,-86],[-80,-52],[-82,-102],[-70,21],[13,-125]],[[5025,4443],[-97,-17],[-75,40],[5,131],[22,27],[-45,29],[-12,88],[-68,33],[-120,-21],[-71,-46],[-90,-138],[-41,-11],[-91,88]],[[4342,4646],[17,78],[34,-7],[-17,160],[17,40],[-48,-1],[33,48]],[[4760,4959],[-73,-35],[8,-63],[57,-41],[89,56],[-33,57],[-48,26]],[[5292,3771],[9,-49],[39,-18],[2,-54],[-25,-101],[-109,-48],[-46,-104],[-28,-138],[31,-102],[-16,-61],[49,-71],[-43,-26],[-16,-65],[53,-37],[-6,-90],[110,-113],[38,29]],[[5334,2723],[-12,-200],[18,-49],[0,-127],[-72,-83],[-3,-65],[31,-80],[-58,57],[-76,41],[-29,-70],[-37,27],[5,78],[-36,79],[40,123],[-24,78],[-18,132],[-44,69],[-17,107],[-58,92],[-167,130],[-45,52]],[[4732,3114],[-1,74],[24,87],[-7,181],[24,93],[-1,99],[18,102],[108,-4],[66,78],[50,20],[35,-49],[41,43],[47,-12],[48,-68],[57,55],[51,-42]],[[6107,2438],[81,-1],[0,-76],[45,-43],[-43,-23],[-75,79],[-8,64]],[[6091,3481],[22,1],[-1,-77],[-44,21],[-11,51],[34,4]],[[6096,4806],[-23,-66],[-19,-144],[-39,-43],[-46,-161],[24,-128],[-62,-48],[-37,-134],[-132,-274],[-59,-51],[18,-61],[-28,-65],[-64,-76],[-124,-99],[-30,-135],[-29,-31],[-48,-197],[-67,-214],[3,-156]],[[5292,3771],[-31,69],[-22,145],[74,124],[6,94],[-11,111],[43,49],[8,103],[71,77],[72,27]],[[5502,4570],[35,-12],[28,-99],[66,-20],[23,-43],[55,8],[26,-104],[49,-21],[31,-58],[52,20],[14,77],[64,251],[59,112],[-29,43],[57,103],[64,-21]],[[6451,6360],[-39,-96],[-92,-97],[-9,-119],[-48,-66],[-7,-94],[34,-72],[-51,-81],[-11,-172],[-35,-112],[1,-73],[-52,-229],[-6,-89],[-29,-104],[12,-52],[-23,-98]],[[5502,4570],[25,49],[-78,60],[53,79],[-17,55]],[[5901,6199],[56,57],[-7,41],[69,73],[21,76]],[[3480,4436],[-14,-59],[-25,50],[39,9]],[[3663,5237],[16,-66],[43,-57],[27,6],[39,-79],[-47,-8],[-62,-84],[8,62],[-38,-5],[-15,70],[45,-28],[20,64],[-51,100],[-69,-65],[-7,-108],[-26,11],[28,149],[34,-26],[18,49],[37,15]],[[6488,7803],[-59,-52],[6,-87],[-40,-7],[-96,71],[-7,90],[76,56]],[[6368,7874],[68,-22],[52,-49]],[[5306,7104],[64,204]],[[6193,7910],[47,-118],[-17,-27],[43,-48],[3,-109],[-43,-19],[2,-65],[-48,-23],[-56,99],[-44,25],[27,79],[-59,46],[57,116],[23,-5],[54,71],[11,-22]],[[4732,3114],[-109,84],[-95,149],[-15,108],[6,95],[-81,231],[-23,112]],[[4415,3893],[18,16],[83,-48],[31,19],[97,-26],[33,54],[46,-9],[55,156],[24,-1],[121,153],[50,119],[29,29],[23,88]],[[6488,7803],[120,-30],[38,16],[-16,-68],[41,-120],[40,9],[34,-44],[-50,-33]],[[6077,6990],[-39,56],[-34,98],[29,35],[-12,54],[-56,56],[-25,-19],[-70,147],[23,22],[-11,87],[53,-3],[55,73],[-27,75],[-46,6],[-91,93]],[[5826,7770],[136,53],[80,185],[105,69],[54,11],[72,-67],[0,-37],[46,-65],[29,11],[20,-56]],[[4773,6169],[26,31],[59,159],[126,221]],[[4415,3893],[-4,67],[-42,81],[-104,83],[-38,57],[33,88],[34,145],[18,154],[30,78]],[[5443,7457],[46,115],[41,67],[49,36],[217,106],[30,-11]]],"transform":{"scale":[0.000785569666066603,0.0005688545404540484],"translate":[116.7062384090001,20.697301579000055]}};
+var global_area_data ;
+var global_city_data ;
 
-
-
-
-function draw_with_data(data){
-	$("body").append("<div id='tabs'></div>");
-	let days = Object.keys(data[0]);
-	if(days.indexOf("name")!=-1){
-	  days.splice(days.indexOf("name"), 1);
-	}
-	if(days.indexOf("x")!=-1){
-	  days.splice(days.indexOf("x"), 1);
-	}
-	if(days.indexOf("y")!=-1){
-	  days.splice(days.indexOf("y"), 1);
-	}
-	let tabs_html = "<ul>"
-				+days.map(function(item,i){return "<li><a href='#tabs-"+i+"'>"+item+"</a></li>";}).join("")
-				+"</ul>"
-				+days.map(function(item,i){return "<div id='tabs-"+i+"'><p>"+item+"</p></div>";}).join("");
-	$("#tabs").append(tabs_html);
-	$("#tabs").tabs();
-	for(let i=0;i<days.length;i++){
-		let day_data = data.map(function(item){
-			console.log(item[days[i]]);
-			return {
-				"name":item.name,
-				"x":item.x,
-				"y":item.y,
-				"data":item[days[i]],
-			};
-		});
-		draw_map( "#tabs-"+i, day_data);
-	}
+function draw_trends(area_data,city_data){
+	global_area_data = area_data;
+	global_city_data = city_data;
+	console.log(area_data);
+	console.log(city_data);
+	
+	$("body").html("<table><tr><td>"
+		+"<div id='the_map'></div>"
+		+"</td><td>"
+		+"<div id='show_data' style='min-width:960px;min-height:450px;background-color:#fff;text-align:center;'>"
+			+"<h1><br><br><br><br>想知道未來15天的空氣品質嗎?<br></h1><h3>找我們就對了  健保屬OO部</h3>"
+			+"</div>"
+		+"</td></tr></table>");
+	draw_six_area();
+	
 }
-function draw_map(container_id,data){
 
+function draw_area_trends(the_area){
+	//console.log(the_area);
+	var all_area_data = global_area_data;
+	var div_id = "#show_data";
+	let the_area_data ; 
+	let chart_title ;
+	for(let i=0;i<all_area_data.length;i++){
+		if(the_area == all_area_data[i]["line_info"].name){
+			the_area_data=all_area_data[i]["data"];
+			chart_title = all_area_data[i]["line_info"].name+" 未來空汙趨勢圖";
+		}
+	}
+	draw_line_chart(div_id,chart_title,the_area_data);
+}
 
-	var topo_taiwan = {"type":"Topology","objects":{"county":{"type":"GeometryCollection","bbox":[116.7062384090001,20.697301579000055,124.56114950000006,26.385278129000085],"geometries":[{"type":"MultiPolygon","properties":{"OBJECTID":1,"Area":29735060.5483,"County_ID":"09007","C_Name":"連江縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[0]]]},{"type":"MultiPolygon","properties":{"OBJECTID":2,"Area":185005359.138,"County_ID":"09020","C_Name":"金門縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[1]],[[2]]]},{"type":"MultiPolygon","properties":{"OBJECTID":3,"Area":2201426268.76,"County_ID":"10002","C_Name":"宜蘭縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[3,4,5,6,7,8]]]},{"type":"Polygon","properties":{"OBJECTID":4,"Area":1411565106.52,"County_ID":"10004","C_Name":"新竹縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[-7,9,10,11,12,13]]},{"type":"Polygon","properties":{"OBJECTID":5,"Area":1826676683.67,"County_ID":"10005","C_Name":"苗栗縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[-11,14,15,16]]},{"type":"Polygon","properties":{"OBJECTID":6,"Area":1244549081.72,"County_ID":"10007","C_Name":"彰化縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[17,18,19,20]]},{"type":"Polygon","properties":{"OBJECTID":7,"Area":4097754662.36,"County_ID":"10008","C_Name":"南投縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[21,22,23,24,-19,25]]},{"type":"MultiPolygon","properties":{"OBJECTID":8,"Area":1399574918.65,"County_ID":"10009","C_Name":"雲林縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[26]],[[-25,27,28,-20]]]},{"type":"MultiPolygon","properties":{"OBJECTID":9,"Area":1952762204.55,"County_ID":"10010","C_Name":"嘉義縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[-24,29,30,31,-28],[32]]]},{"type":"MultiPolygon","properties":{"OBJECTID":10,"Area":2805016552.2,"County_ID":"10013","C_Name":"屏東縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[33,34,35]]]},{"type":"MultiPolygon","properties":{"OBJECTID":11,"Area":3581832603.27,"County_ID":"10014","C_Name":"臺東縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[36]],[[37]],[[38,-34,39,40]]]},{"type":"Polygon","properties":{"OBJECTID":12,"Area":4605695449.58,"County_ID":"10015","C_Name":"花蓮縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[41,-41,42,-22,43,-5]]},{"type":"MultiPolygon","properties":{"OBJECTID":13,"Area":135223749.493,"County_ID":"10016","C_Name":"澎湖縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[44]],[[45]]]},{"type":"MultiPolygon","properties":{"OBJECTID":14,"Area":137570190.544,"County_ID":"10017","C_Name":"基隆市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[46,47]]]},{"type":"Polygon","properties":{"OBJECTID":15,"Area":124389934.739,"County_ID":"10018","C_Name":"新竹市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[-17,48,-12]]},{"type":"Polygon","properties":{"OBJECTID":16,"Area":59722166.0789,"County_ID":"10020","C_Name":"嘉義市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[-33]]},{"type":"Polygon","properties":{"OBJECTID":17,"Area":269847319.981,"County_ID":"63","C_Name":"臺北市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[49]]},{"type":"MultiPolygon","properties":{"OBJECTID":18,"Area":2995099782.37,"County_ID":"64","C_Name":"高雄市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制"},"arcs":[[[-43,-40,-36,50,51,-30,-23]]]},{"type":"Polygon","properties":{"OBJECTID":19,"Area":2066260788.66,"County_ID":"65","C_Name":"新北市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制"},"arcs":[[-47,52,-9,53,54],[-50]]},{"type":"Polygon","properties":{"OBJECTID":20,"Area":2239785479.54,"County_ID":"66","C_Name":"臺中市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制"},"arcs":[[-44,-26,-18,55,-15,-10,-6]]},{"type":"Polygon","properties":{"OBJECTID":21,"Area":2258815738.57,"County_ID":"67","C_Name":"臺南市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制"},"arcs":[[-52,56,-31]]},{"type":"Polygon","properties":{"OBJECTID":22,"Area":1217223234.53,"County_ID":"68","C_Name":"桃園市","Add_Date":"2014-12-24T16:00:00.000Z","Add_Accept":"內政部102年5月31日台內民字第1020216023號令","Remark":"桃園升格"},"arcs":[[-54,-8,-14,57]]}]}},"arcs":[[[4087,9630],[61,-15],[-31,-42],[-40,2],[10,55]],[[1963,6607],[22,-49],[-67,-32],[21,75],[24,6]],[[2170,6740],[28,-11],[54,-126],[-25,-65],[-91,32],[-47,-28],[-35,-59],[-53,49],[31,44],[-22,65],[32,37],[66,-43],[62,105]],[[6695,7533],[-52,-24],[-94,-139],[-27,-71],[-16,-145],[44,-245],[28,-54],[-1,-116],[-39,-19],[22,-63],[-73,-85],[-36,-212]],[[6451,6360],[-124,39],[-58,58],[1,-60],[-82,-32],[-27,34],[-61,3],[-60,44]],[[6040,6446],[-18,32],[-82,-25],[-59,56],[-11,73]],[[5870,6582],[36,76],[70,77],[3,111]],[[5979,6846],[29,20],[42,123],[27,1]],[[6077,6990],[71,25],[75,89],[-3,86],[43,37],[80,13],[52,69],[40,2],[39,76],[78,45],[-11,60],[154,41]],[[5870,6582],[-75,-7]],[[5795,6575],[3,31],[-58,106],[-59,-22],[-59,12],[-66,-21],[11,76],[-23,29],[27,56],[-96,96],[-53,72],[13,38],[-52,10]],[[5383,7058],[12,58],[62,62],[51,-34],[-16,71],[-46,50],[-76,43]],[[5370,7308],[73,149]],[[5443,7457],[71,12],[27,-70],[61,-36],[62,-11],[-7,-63],[89,-76],[28,15],[22,-49],[53,-33],[-1,-121],[68,-46],[12,-114],[51,-19]],[[5795,6575],[-34,-95],[-45,22],[-36,-62],[-172,-111],[-42,61],[-84,18],[-29,-85],[-99,-8],[-34,46],[-55,17],[-89,72],[-92,130]],[[4984,6580],[54,76],[66,206],[76,106],[61,20],[65,116]],[[5306,7104],[41,4],[36,-50]],[[4773,6169],[62,-27],[52,-132],[81,-26],[22,-126],[67,-27]],[[5057,5831],[-53,-13],[11,-78],[-31,-164],[10,-65],[69,-54],[-55,-28]],[[5008,5429],[-111,27],[-55,-2],[-98,52],[-159,-16],[-66,23],[-47,58]],[[4472,5571],[48,57],[31,93],[66,109],[7,80],[56,48],[41,146],[52,65]],[[5901,6199],[10,-42],[-81,-39],[-6,-74],[59,-37],[-8,-57],[-50,-48],[-29,-108],[23,-50],[-11,-142],[-39,-77],[-14,-100],[-27,-15],[45,-115],[-7,-85],[-29,-109],[-77,-22],[-23,-127],[-84,7],[-39,-77],[17,-43],[-46,-26]],[[5485,4813],[-21,46],[-53,13]],[[5411,4872],[-58,13],[-92,-10],[-40,132],[23,70],[-18,27],[-103,18]],[[5123,5122],[-90,-1],[-39,45],[24,82],[-10,84],[19,7],[-19,90]],[[5057,5831],[88,-27],[103,127],[8,81],[23,12],[47,-48],[79,54],[51,-12],[23,52],[53,7],[56,67],[52,6],[39,51],[15,-22],[95,53],[112,-33]],[[4295,4968],[-24,-59],[-82,-42],[106,101]],[[5123,5122],[6,-71],[-81,12],[-29,27],[-90,-18],[-54,21],[-41,72],[-92,-30],[-38,14],[-144,-114],[-26,-55],[-60,-45],[-96,29]],[[4378,4964],[-8,164],[-28,21],[66,233],[-16,44],[65,95],[15,50]],[[5411,4872],[-60,-19],[-78,-66],[-29,-86],[-80,-52],[-82,-102],[-70,21],[13,-125]],[[5025,4443],[-97,-17],[-75,40],[5,131],[22,27],[-45,29],[-12,88],[-68,33],[-120,-21],[-71,-46],[-90,-138],[-41,-11],[-91,88]],[[4342,4646],[17,78],[34,-7],[-17,160],[17,40],[-48,-1],[33,48]],[[4760,4959],[-73,-35],[8,-63],[57,-41],[89,56],[-33,57],[-48,26]],[[5292,3771],[9,-49],[39,-18],[2,-54],[-25,-101],[-109,-48],[-46,-104],[-28,-138],[31,-102],[-16,-61],[49,-71],[-43,-26],[-16,-65],[53,-37],[-6,-90],[110,-113],[38,29]],[[5334,2723],[-12,-200],[18,-49],[0,-127],[-72,-83],[-3,-65],[31,-80],[-58,57],[-76,41],[-29,-70],[-37,27],[5,78],[-36,79],[40,123],[-24,78],[-18,132],[-44,69],[-17,107],[-58,92],[-167,130],[-45,52]],[[4732,3114],[-1,74],[24,87],[-7,181],[24,93],[-1,99],[18,102],[108,-4],[66,78],[50,20],[35,-49],[41,43],[47,-12],[48,-68],[57,55],[51,-42]],[[6107,2438],[81,-1],[0,-76],[45,-43],[-43,-23],[-75,79],[-8,64]],[[6091,3481],[22,1],[-1,-77],[-44,21],[-11,51],[34,4]],[[6096,4806],[-23,-66],[-19,-144],[-39,-43],[-46,-161],[24,-128],[-62,-48],[-37,-134],[-132,-274],[-59,-51],[18,-61],[-28,-65],[-64,-76],[-124,-99],[-30,-135],[-29,-31],[-48,-197],[-67,-214],[3,-156]],[[5292,3771],[-31,69],[-22,145],[74,124],[6,94],[-11,111],[43,49],[8,103],[71,77],[72,27]],[[5502,4570],[35,-12],[28,-99],[66,-20],[23,-43],[55,8],[26,-104],[49,-21],[31,-58],[52,20],[14,77],[64,251],[59,112],[-29,43],[57,103],[64,-21]],[[6451,6360],[-39,-96],[-92,-97],[-9,-119],[-48,-66],[-7,-94],[34,-72],[-51,-81],[-11,-172],[-35,-112],[1,-73],[-52,-229],[-6,-89],[-29,-104],[12,-52],[-23,-98]],[[5502,4570],[25,49],[-78,60],[53,79],[-17,55]],[[5901,6199],[56,57],[-7,41],[69,73],[21,76]],[[3480,4436],[-14,-59],[-25,50],[39,9]],[[3663,5237],[16,-66],[43,-57],[27,6],[39,-79],[-47,-8],[-62,-84],[8,62],[-38,-5],[-15,70],[45,-28],[20,64],[-51,100],[-69,-65],[-7,-108],[-26,11],[28,149],[34,-26],[18,49],[37,15]],[[6488,7803],[-59,-52],[6,-87],[-40,-7],[-96,71],[-7,90],[76,56]],[[6368,7874],[68,-22],[52,-49]],[[5306,7104],[64,204]],[[6193,7910],[47,-118],[-17,-27],[43,-48],[3,-109],[-43,-19],[2,-65],[-48,-23],[-56,99],[-44,25],[27,79],[-59,46],[57,116],[23,-5],[54,71],[11,-22]],[[4732,3114],[-109,84],[-95,149],[-15,108],[6,95],[-81,231],[-23,112]],[[4415,3893],[18,16],[83,-48],[31,19],[97,-26],[33,54],[46,-9],[55,156],[24,-1],[121,153],[50,119],[29,29],[23,88]],[[6488,7803],[120,-30],[38,16],[-16,-68],[41,-120],[40,9],[34,-44],[-50,-33]],[[6077,6990],[-39,56],[-34,98],[29,35],[-12,54],[-56,56],[-25,-19],[-70,147],[23,22],[-11,87],[53,-3],[55,73],[-27,75],[-46,6],[-91,93]],[[5826,7770],[136,53],[80,185],[105,69],[54,11],[72,-67],[0,-37],[46,-65],[29,11],[20,-56]],[[4773,6169],[26,31],[59,159],[126,221]],[[4415,3893],[-4,67],[-42,81],[-104,83],[-38,57],[33,88],[34,145],[18,154],[30,78]],[[5443,7457],[46,115],[41,67],[49,36],[217,106],[30,-11]]],"transform":{"scale":[0.000785569666066603,0.0005688545404540484],"translate":[116.7062384090001,20.697301579000055]}};
-	let topoData=topo_taiwan;
-	var projection = d3.geo.mercator().center([122.0,24.4]).scale(6000);    
+function prepare_draw_city_trends(the_area){
+	console.log(global_city_data);
+	let data = global_city_data;
+	
+	let days = Object.keys(data);
+	days.sort();
+	let select_html = 
+	"<div style='position:absolute;left:72px;top:60px;text-align:center;'>"
+		+"日期：<br>"
+		+"<select id='select_day' style=''>"
+		+"<option value=''>選擇日期</option>"
+		+ days.map(function(item,i){return "<option value='"+item+"'>"+item+"</option>";}).join("")
+		+"</select>"
+		+"</div>";
+
+	$("#the_map").html(select_html);
+	$("#show_data").html("<h1><br><br><br><br>想知道"+the_area+"的什麼地方呢<br></h1><h3>選選你希望預測的那一天<br>再點點看 讓我告訴你!</h3>");
+	
+	draw_city_trends("",the_area,[]);
+	
+	$("#select_day").change(function(){
+		let the_day = $("#select_day").val();
+		let day_data = data[the_day]!=null?data[the_day].citydata:[];
+		
+		draw_city_trends( the_day,the_area,day_data);
+	});
+}
+
+function draw_city_trends(the_day,the_area,data){
+	
+	console.log("draw_city_trends");
+	console.log(the_area);
+	console.log(data);
+	var area_dict={
+		"台北區":{
+			"center":[122.3,24.4],
+			"scale":6000,
+			"cities":["臺北市","新北市","連江縣","金門縣","宜蘭縣","基隆市"]
+		},
+		"北區":{ 
+			"center":[121.5,24.8],
+			"scale":25000,
+			"cities":["桃園市","新竹縣","苗栗縣","新竹市"]
+		},
+		"中區":{
+			"center":[121.4,24.1],
+			"scale":20000,
+			"cities":["臺中市","彰化縣","南投縣"]
+		},
+		"南區":{
+			"center":[120.9,23.5],
+			"scale":23000,
+			"cities":["臺南市","雲林縣","嘉義縣","嘉義市"]
+		},
+		"高屏區":{
+			"center":[121.3,22.9],
+			"scale":12000,
+			"cities":["高雄市","屏東縣","澎湖縣"]
+		},
+		"東區":{
+			"center":[122.4,23.6],
+			"scale":10000,
+			"cities":["臺東縣","花蓮縣"]
+		}
+	};
+	
+	var container_id = "#the_map";
+	
+	var projection = d3.geo.mercator()
+		.center(area_dict[the_area].center)
+		.scale(area_dict[the_area].scale);    
 	var path = d3.geo.path().projection(projection);
-	var topo = topojson.feature(topoData, topoData.objects["county"]);
-	//console.log(topo.features);
+	var topo = topojson.feature(topo_taiwan, topo_taiwan.objects["county"]);
+	topo.features = topo.features.filter(function(item){
+		if(area_dict[the_area].cities.indexOf(item.properties.C_Name)!=-1){
+			return true;
+		}
+	});
+
 	$(container_id+" > svg").remove();
 	var selection = d3.select(container_id).append("svg")
-		.attr("width","720")
+		.attr("width","600")
 		.attr("height","600")
 		.attr("style","background-color:#eee")
+		.selectAll("path").data(topo.features);
+	
+	selection.enter().append("path");
+	selection.exit().remove();
+	selection.classed("map-boundary", true).attr("d", path);
+	
+	d3.selectAll(container_id+" path")
+		.attr({
+			"stroke": "#000",
+			"stroke-width": "0.3",
+			"fill": "#F8F8FF"
+		});
+	if(data.length==0)return;
+	var colorTmp ;
+	d3.selectAll(container_id+" path")
+            .attr({
+                title : function(d,i){
+					let retStr = "";
+					let seriousStr = "";
+					$.each(data,function(i,item){
+						if(item.city == d["properties"]["C_Name"]){
+							if(item.data >0.6){seriousStr = "嚴重";}
+							else if(item.data >0.3){seriousStr = "普通";}
+							else{seriousStr = "良好";}
+							
+							retStr =  "<table style='padding:8px;'>"
+											+"<tr><td>縣市名稱：</td><td>"+item.city+"</td></tr>"
+											+"<tr><td>嚴重程度：</td><td>"+seriousStr+"</td></tr>"
+											+"</table>";
+						}
+					});
+					return retStr;
+                },
+                "stroke": "#000",
+                "stroke-width": "0.3",
+				"fill": function(d,i){
+					let retStr = "#F8F8FF";
+                	$.each(data,function(i,item){
+						if(item.city == d["properties"]["C_Name"]){
+							console.log(item.data);
+							if(item.data >0.6){retStr = "#FE2E2E";}
+							else if(item.data >0.3){retStr = "#FFDD55";}
+							else if(item.data >=0){retStr = "#66FF66";}
+						}
+					});
+					return retStr;
+                },
+                "class" : function(d,i){
+					let retStr = "";
+                	$.each(data,function(i,item){
+						if(item.city == d["properties"]["C_Name"]){
+							retStr = "tip_on_map";
+						}
+					});
+					return retStr;
+                },
+           }).on("mouseover",function(d){
+                colorTmp = d3.select(this).attr("fill");
+                d3.select(this).attr({fill:(d3.select(this).attr("title")==""?colorTmp:"#FFFF00")});
+           }).on("mouseout",function(d){
+               d3.select(this).attr({fill:colorTmp});
+           }).on("click",function(d){
+			   $.each(data,function(i,item){
+					if(item.city == d["properties"]["C_Name"]){
+						draw_station_trends(the_day,item.city,item.stationData);
+					}
+				});
+		   });
+	tooltip("tip_on_map");
+	
+}
+
+function draw_station_trends(the_day,city,stationData){
+//function draw_station_data(the_day,city,stationData){
+	
+	let dataArr = stationData.map(function(item){
+		return {
+			"測站名稱":item.name,
+			"資料":item.data
+		}
+	});
+	
+	let outputArr = plain_table(dataArr);
+	$("#show_data").html("<div style='width:300px;text-align:center;margin: auto;'>"+city+"<br>"+the_day+""+outputArr+"</div>");
+	
+//}
+}
+
+function draw_six_area(){
+	var area_dict={
+		"台北區":{
+			"color":"#3371C1",
+			"name":"taipei"
+		},
+		"北區":{
+			"color":"#FF9FCF",
+			"name":"north"
+		},
+		"中區":{
+			"color":"#7AC8A0",
+			"name":"center"
+		},
+		"南區":{
+			"color":"#70BE44",
+			"name":"south"
+		},
+		"高屏區":{
+			"color":"#F36A62",
+			"name":"kaoping"
+		},
+		"東區":{
+			"color":"#FEEE83",
+			"name":"east"
+		}
+	};
+	
+	
+	var container_id = "#the_map";
+	
+	var projection = d3.geo.mercator().center([122.3,24.4]).scale(6000);    
+	var path = d3.geo.path().projection(projection);
+	var topo = topojson.feature(topo_taiwan, topo_taiwan.objects["county"]);
+	
+	$(container_id+" > svg").remove();
+	var selection = d3.select(container_id).append("svg")
+		.attr("width","600")
+		.attr("height","600")
+		.attr("style","background-color:#eee")
+		.selectAll("path").data(topo.features);
+	
+	selection.enter().append("path");
+	selection.exit().remove();
+	selection.classed("map-boundary", true).attr("d", path);
+	var colorTmp ;
+	d3.selectAll(container_id+" path")
+	.attr({
+		"class":function(item,i){
+			return area_dict[item["properties"]["A_Name"]].name;
+		},
+		"area":function(item,i){
+			return item["properties"]["A_Name"];
+		},
+		"stroke": "#000",
+		"stroke-width": "0.3",
+		"fill": function(item,i){
+			return area_dict[item["properties"]["A_Name"]].color;
+		}
+	}).on("mouseover",function(d){
+		
+		colorTmp = d3.select(this).attr("fill");
+		d3.selectAll("."+d3.select(this).attr("class")).attr({fill:(d3.select(this).attr("title")==""?colorTmp:"#FFFF00")});
+		
+		draw_area_trends(d3.select(this).attr("area"));
+		
+   }).on("mouseout",function(d){
+	   
+	   d3.selectAll("."+d3.select(this).attr("class")).attr({fill:colorTmp});
+	   
+   }).on("click",function(d){
+	   
+	   prepare_draw_city_trends(d3.select(this).attr("area"));
+	   
+   });
+   
+}
+
+function formatDayStr(timestamp){
+	return new Date(timestamp+8*3600*1000).toISOString().split("T")[0];
+}
+
+function draw_line_chart(container,chart_title,chart_data){
+	//console.log(chart_data);
+	chart_data.map(function(item){
+		item.timestamp = new Date("2018/"+item.time).getTime();
+		return item;
+	});
+	$(container).empty()
+	//d3.select(container+" svg").remove();
+	var margin = {top: 70, right: 80, bottom: 20, left: 80};
+	var width = 900;
+	var height = 450;
+
+	var svg = d3.select(container).append("svg")
+		.attr("width", width + margin.left + margin.right)							
+		.attr("height", height + margin.top + margin.bottom-30)
+		.attr("style","background-color:#fff");
+	
+	var xScale = d3.time.scale()
+		.domain([new Date(d3.min(chart_data, function(d) { return d.timestamp; })),new Date(d3.max(chart_data, function(d) { return d.timestamp; }))])
+		.range([0, width - margin.left - margin.right]);
+	var yScale = d3.scale.linear()
+		.domain([0,d3.max(chart_data, function(d) {return d.value})*1.2	])
+		.range([height - margin.top - margin.bottom,0]);
+		
+	var xAxis = d3.svg.axis()
+		.scale(xScale)
+		.orient("bottom")
+		.ticks(5)
+		.tickFormat(d3.time.format('%Y-%m-%d'));
+		
+	var yAxis = d3.svg.axis()
+		.scale(yScale)
+		.ticks(5)
+		.tickFormat(function(d){return d;})
+		.orient("left");
+	svg.append("g")
+		.append("text")
+		.text(chart_title)
+		.attr("class","title")
+		.attr({'fill':'#222','x':((width * 0.5) - (margin.right*1.5)) ,'y':(margin.top) })
+		.style({'font-size':'32px','font-family':'Microsoft JhengHei'});
+	svg.append("g")
+		.append('text')
+		.text("時間")
+		.attr("font-size","1.2em")
+		.attr('transform', 'translate('+(width-margin.right+20)+','+(height-margin.bottom)+')');
+	  
+	svg.append("g")
+	   .attr("class","axis")
+	   .attr("transform","translate(" + margin.left + "," + (height - margin.bottom) + ")")
+	   .call(xAxis)
+	   .selectAll("text")
+	   .attr("transform", "rotate(15)")
+	   .style("text-anchor", "start");
+	
+	svg.append("g")
+	  .attr("class","axis")
+	  .attr("transform","translate(" + (margin.left)+ "," + margin.top + ")")
+	  .call(yAxis)
+	  .append('text')
+	  .attr('transform', 'translate(-10, -20)');
+	
+	//產生線條
+	var lineGen = d3.svg.line()
+		.x(function(data) {return xScale(new Date(data.timestamp));})
+		.y(function(data) {return yScale(data.value);})
+		.interpolate("cardinal");
+	
+	
+	/*var minDate=(Math.random()>0.5?d3.max(bath_data, function(d) { return d.FinanceDate; }):d3.min(bath_data, function(d) { return d.FinanceDate; }));
+	var minRate=(Math.random()>0.5?d3.max(bath_data, function(d) { return d.FailureRate; }):d3.min(bath_data, function(d) { return d.FailureRate; }));
+	var new_vector=[];
+	$.each (bath_data, function (i,item) {
+		new_vector[i]={};
+		new_vector[i].FinanceDate=minDate;
+		new_vector[i].FailureRate=minRate;
+	});*/
+	svg.append('path')
+		/*.attr({
+		  'd': lineGen([]),
+		  'stroke': '#09F',
+		  'fill': 'none',
+		  'stroke-width':'3'
+		}).attr("transform","translate(" + (margin.left)+ "," + margin.top + ")")
+		.transition()
+		.delay(300)
+		.duration(1500)*/
+		.attr({
+		  'd': lineGen(chart_data),
+		  'stroke': '#09F',
+		  'fill': 'none',
+		  'stroke-width':'3'
+		}).attr("transform","translate(" + (margin.left)+ "," + margin.top + ")")
+		;	
+	svg.append("g").selectAll("circle")
+		.data(chart_data)
+		.enter()
+		.append("circle")
+    	.attr({
+    		"cx":function(d) {return xScale(new Date(d.timestamp));},
+			"cy":function(d) {return yScale(d.value);},
+			"r" : 4,
+			"fill": "#00f",
+			"title" : function(d){
+				return "<div style='padding:2px 2px;font-size:1.2em;'><table>"
+							+"<caption>空汙預測</caption>"
+							+"<tr><td>時間：</td><td>"+formatDayStr(d.timestamp)+"</td></tr>"
+							+"<tr><td>數值：</td><td>"+d.value+"</td></tr>"
+							+"</table></div>";
+			},
+			"class" : "tips"
+		}).attr("transform","translate(" + (margin.left)+ "," + margin.top + ")");
+		
+	tooltip("tips");
+	//$("#tabs").tabs( "option", "active", 2 );
+}
+/*
+function draw_line_chart(container,chart_title,chart_data){
+	$(container).empty();
+	var margin = {top: 20, right: 20, bottom: 60, left: 50},
+    width = 960 - margin.left - margin.right,
+    height = 460 - margin.top - margin.bottom;
+	
+	var svg = d3.select(container).append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+		.attr("style","background-color:#eee")
+	svg.append("g")
+		.attr("transform",
+			  "translate(" + margin.left + "," + margin.top + ")");
+			  
+	var xScale = d3.scale.linear()
+        .domain(d3.extent(chart_data, function(d) {
+            return new Date("2018/"+d.time).getTime();
+        }))
+        .range([0, width]);
+	var yScale = d3.scale.linear()
+        .domain([0, d3.max(chart_data,function(d) {
+            return d.value;
+        })])
+        .range([height, 0]);
+		
+	var xAxis = d3.svg.axis()
+        .scale(xScale)
+        .orient('bottom');
+	var yAxis = d3.svg.axis()
+        .scale(yScale)
+        .orient('left');
+		
+	var line = d3.svg.line()
+        .x(function(d) {
+			return xScale(new Date("2018/"+d.time).getTime());
+        })
+        .y(function(d) {
+            return yScale(d.value);
+        })
+        .interpolate('linear');
+	console.log(chart_data);
+	svg.append('path')
+        .attr('class', 'line')
+        .attr('d', line(chart_data));
+		
+		
+		
+		
+	var parseTime = function(time){
+		return new Date(time).getTime();
+	};
+
+	var x = d3.scaleTime().range([0, width]);
+	var y = d3.scaleLinear().range([height, 0]);
+	
+	var valueline = d3.line()
+		.x(function(d) { return x(d.time); })
+		.y(function(d) { return y(d.value); })
+		.curve(d3.curveCardinal);
+
+	jsonDataLine.forEach(function(d) {
+	  d.time = parseTime(d.time);
+	  d.value = +d.value;
+	});
+
+	// Scale the range of the data
+	
+	x.domain(d3.extent(jsonDataLine, function(d) { return d.time; }));
+	y.domain([0, d3.max(jsonDataLine, function(d) { return d.value; })]);
+
+	// Add the valueline path.
+	svg.append("path")
+	  .data([jsonDataLine])
+	  .attr("class", "line_blue")
+	  .attr("d", valueline);
+	
+	 
+}
+*/
+
+
+
+/*
+function draw_with_data(area_data,city_data){
+	let days = Object.keys(data);
+	
+	days.sort();
+	let tabs_html = 
+	"<div style='position:absolute;left:72px;top:60px;text-align:center;'>"
+		+"日期：<br>"
+		+"<select id='select_day' style=''>"
+		+"<option value=''>選擇日期</option>"
+		+ days.map(function(item,i){return "<option value='"+item+"'>"+item+"</option>";}).join("")
+		+"</select>"
+		//+days.map(function(item,i){return "<li style='margin:10px;'><a href='#' class='draw_the_day' days='"+item+"'>"+item+"</a></li>";}).join("")
+		+"</div>";
+	$("body").append(
+		tabs_html
+		+"<table><tr><td>"
+		+"<div id='the_map'></div>"
+		+"</td><td>"
+		+"<div id='station_data'></div>"
+		+"</td></tr></table>");
+		
+	draw_map( "#the_map",[]);
+	
+	$("#select_day").change(function(){
+		let the_day = $("#select_day").val();
+		let day_data = data[the_day]!=null?data[the_day].citydata:[];
+		$("#station_data").html("");
+		draw_map( "#the_map",  day_data,the_day);
+	});
+	
+}
+
+function draw_station_data(the_day,city,stationData){
+	
+	let dataArr = stationData.map(function(item){
+		return {
+			"測站名稱":item.name,
+			"資料":item.data
+		}
+	});
+	
+	let outputArr = plain_table(dataArr);
+	$("#station_data").html("<div style='text-align:center;'>"+city+"<br>"+the_day+"</div>"+outputArr);
+	
+}
+
+function draw_map(container_id,data,the_day){
+	var topo_taiwan = {"type":"Topology","objects":{"county":{"type":"GeometryCollection","bbox":[116.7062384090001,20.697301579000055,124.56114950000006,26.385278129000085],"geometries":[{"type":"MultiPolygon","properties":{"OBJECTID":1,"Area":29735060.5483,"County_ID":"09007","C_Name":"連江縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"台北區"},"arcs":[[[0]]]},{"type":"MultiPolygon","properties":{"OBJECTID":2,"Area":185005359.138,"County_ID":"09020","C_Name":"金門縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"台北區"},"arcs":[[[1]],[[2]]]},{"type":"MultiPolygon","properties":{"OBJECTID":3,"Area":2201426268.76,"County_ID":"10002","C_Name":"宜蘭縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"台北區"},"arcs":[[[3,4,5,6,7,8]]]},{"type":"Polygon","properties":{"OBJECTID":4,"Area":1411565106.52,"County_ID":"10004","C_Name":"新竹縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"北區"},"arcs":[[-7,9,10,11,12,13]]},{"type":"Polygon","properties":{"OBJECTID":5,"Area":1826676683.67,"County_ID":"10005","C_Name":"苗栗縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"北區"},"arcs":[[-11,14,15,16]]},{"type":"Polygon","properties":{"OBJECTID":6,"Area":1244549081.72,"County_ID":"10007","C_Name":"彰化縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"中區"},"arcs":[[17,18,19,20]]},{"type":"Polygon","properties":{"OBJECTID":7,"Area":4097754662.36,"County_ID":"10008","C_Name":"南投縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"中區"},"arcs":[[21,22,23,24,-19,25]]},{"type":"MultiPolygon","properties":{"OBJECTID":8,"Area":1399574918.65,"County_ID":"10009","C_Name":"雲林縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"南區"},"arcs":[[[26]],[[-25,27,28,-20]]]},{"type":"MultiPolygon","properties":{"OBJECTID":9,"Area":1952762204.55,"County_ID":"10010","C_Name":"嘉義縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"南區"},"arcs":[[[-24,29,30,31,-28],[32]]]},{"type":"MultiPolygon","properties":{"OBJECTID":10,"Area":2805016552.2,"County_ID":"10013","C_Name":"屏東縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"高屏區"},"arcs":[[[33,34,35]]]},{"type":"MultiPolygon","properties":{"OBJECTID":11,"Area":3581832603.27,"County_ID":"10014","C_Name":"臺東縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"東區"},"arcs":[[[36]],[[37]],[[38,-34,39,40]]]},{"type":"Polygon","properties":{"OBJECTID":12,"Area":4605695449.58,"County_ID":"10015","C_Name":"花蓮縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"東區"},"arcs":[[41,-41,42,-22,43,-5]]},{"type":"MultiPolygon","properties":{"OBJECTID":13,"Area":135223749.493,"County_ID":"10016","C_Name":"澎湖縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"高屏區"},"arcs":[[[44]],[[45]]]},{"type":"MultiPolygon","properties":{"OBJECTID":14,"Area":137570190.544,"County_ID":"10017","C_Name":"基隆市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"台北區"},"arcs":[[[46,47]]]},{"type":"Polygon","properties":{"OBJECTID":15,"Area":124389934.739,"County_ID":"10018","C_Name":"新竹市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"北區"},"arcs":[[-17,48,-12]]},{"type":"Polygon","properties":{"OBJECTID":16,"Area":59722166.0789,"County_ID":"10020","C_Name":"嘉義市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"南區"},"arcs":[[-33]]},{"type":"Polygon","properties":{"OBJECTID":17,"Area":269847319.981,"County_ID":"63","C_Name":"臺北市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null,"A_Name":"台北區"},"arcs":[[49]]},{"type":"MultiPolygon","properties":{"OBJECTID":18,"Area":2995099782.37,"County_ID":"64","C_Name":"高雄市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制","A_Name":"高屏區"},"arcs":[[[-43,-40,-36,50,51,-30,-23]]]},{"type":"Polygon","properties":{"OBJECTID":19,"Area":2066260788.66,"County_ID":"65","C_Name":"新北市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制","A_Name":"台北區"},"arcs":[[-47,52,-9,53,54],[-50]]},{"type":"Polygon","properties":{"OBJECTID":20,"Area":2239785479.54,"County_ID":"66","C_Name":"臺中市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制","A_Name":"中區"},"arcs":[[-44,-26,-18,55,-15,-10,-6]]},{"type":"Polygon","properties":{"OBJECTID":21,"Area":2258815738.57,"County_ID":"67","C_Name":"臺南市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制","A_Name":"南區"},"arcs":[[-52,56,-31]]},{"type":"Polygon","properties":{"OBJECTID":22,"Area":1217223234.53,"County_ID":"68","C_Name":"桃園市","Add_Date":"2014-12-24T16:00:00.000Z","Add_Accept":"內政部102年5月31日台內民字第1020216023號令","Remark":"桃園升格","A_Name":"北區"},"arcs":[[-54,-8,-14,57]]}]}},"arcs":[[[4087,9630],[61,-15],[-31,-42],[-40,2],[10,55]],[[1963,6607],[22,-49],[-67,-32],[21,75],[24,6]],[[2170,6740],[28,-11],[54,-126],[-25,-65],[-91,32],[-47,-28],[-35,-59],[-53,49],[31,44],[-22,65],[32,37],[66,-43],[62,105]],[[6695,7533],[-52,-24],[-94,-139],[-27,-71],[-16,-145],[44,-245],[28,-54],[-1,-116],[-39,-19],[22,-63],[-73,-85],[-36,-212]],[[6451,6360],[-124,39],[-58,58],[1,-60],[-82,-32],[-27,34],[-61,3],[-60,44]],[[6040,6446],[-18,32],[-82,-25],[-59,56],[-11,73]],[[5870,6582],[36,76],[70,77],[3,111]],[[5979,6846],[29,20],[42,123],[27,1]],[[6077,6990],[71,25],[75,89],[-3,86],[43,37],[80,13],[52,69],[40,2],[39,76],[78,45],[-11,60],[154,41]],[[5870,6582],[-75,-7]],[[5795,6575],[3,31],[-58,106],[-59,-22],[-59,12],[-66,-21],[11,76],[-23,29],[27,56],[-96,96],[-53,72],[13,38],[-52,10]],[[5383,7058],[12,58],[62,62],[51,-34],[-16,71],[-46,50],[-76,43]],[[5370,7308],[73,149]],[[5443,7457],[71,12],[27,-70],[61,-36],[62,-11],[-7,-63],[89,-76],[28,15],[22,-49],[53,-33],[-1,-121],[68,-46],[12,-114],[51,-19]],[[5795,6575],[-34,-95],[-45,22],[-36,-62],[-172,-111],[-42,61],[-84,18],[-29,-85],[-99,-8],[-34,46],[-55,17],[-89,72],[-92,130]],[[4984,6580],[54,76],[66,206],[76,106],[61,20],[65,116]],[[5306,7104],[41,4],[36,-50]],[[4773,6169],[62,-27],[52,-132],[81,-26],[22,-126],[67,-27]],[[5057,5831],[-53,-13],[11,-78],[-31,-164],[10,-65],[69,-54],[-55,-28]],[[5008,5429],[-111,27],[-55,-2],[-98,52],[-159,-16],[-66,23],[-47,58]],[[4472,5571],[48,57],[31,93],[66,109],[7,80],[56,48],[41,146],[52,65]],[[5901,6199],[10,-42],[-81,-39],[-6,-74],[59,-37],[-8,-57],[-50,-48],[-29,-108],[23,-50],[-11,-142],[-39,-77],[-14,-100],[-27,-15],[45,-115],[-7,-85],[-29,-109],[-77,-22],[-23,-127],[-84,7],[-39,-77],[17,-43],[-46,-26]],[[5485,4813],[-21,46],[-53,13]],[[5411,4872],[-58,13],[-92,-10],[-40,132],[23,70],[-18,27],[-103,18]],[[5123,5122],[-90,-1],[-39,45],[24,82],[-10,84],[19,7],[-19,90]],[[5057,5831],[88,-27],[103,127],[8,81],[23,12],[47,-48],[79,54],[51,-12],[23,52],[53,7],[56,67],[52,6],[39,51],[15,-22],[95,53],[112,-33]],[[4295,4968],[-24,-59],[-82,-42],[106,101]],[[5123,5122],[6,-71],[-81,12],[-29,27],[-90,-18],[-54,21],[-41,72],[-92,-30],[-38,14],[-144,-114],[-26,-55],[-60,-45],[-96,29]],[[4378,4964],[-8,164],[-28,21],[66,233],[-16,44],[65,95],[15,50]],[[5411,4872],[-60,-19],[-78,-66],[-29,-86],[-80,-52],[-82,-102],[-70,21],[13,-125]],[[5025,4443],[-97,-17],[-75,40],[5,131],[22,27],[-45,29],[-12,88],[-68,33],[-120,-21],[-71,-46],[-90,-138],[-41,-11],[-91,88]],[[4342,4646],[17,78],[34,-7],[-17,160],[17,40],[-48,-1],[33,48]],[[4760,4959],[-73,-35],[8,-63],[57,-41],[89,56],[-33,57],[-48,26]],[[5292,3771],[9,-49],[39,-18],[2,-54],[-25,-101],[-109,-48],[-46,-104],[-28,-138],[31,-102],[-16,-61],[49,-71],[-43,-26],[-16,-65],[53,-37],[-6,-90],[110,-113],[38,29]],[[5334,2723],[-12,-200],[18,-49],[0,-127],[-72,-83],[-3,-65],[31,-80],[-58,57],[-76,41],[-29,-70],[-37,27],[5,78],[-36,79],[40,123],[-24,78],[-18,132],[-44,69],[-17,107],[-58,92],[-167,130],[-45,52]],[[4732,3114],[-1,74],[24,87],[-7,181],[24,93],[-1,99],[18,102],[108,-4],[66,78],[50,20],[35,-49],[41,43],[47,-12],[48,-68],[57,55],[51,-42]],[[6107,2438],[81,-1],[0,-76],[45,-43],[-43,-23],[-75,79],[-8,64]],[[6091,3481],[22,1],[-1,-77],[-44,21],[-11,51],[34,4]],[[6096,4806],[-23,-66],[-19,-144],[-39,-43],[-46,-161],[24,-128],[-62,-48],[-37,-134],[-132,-274],[-59,-51],[18,-61],[-28,-65],[-64,-76],[-124,-99],[-30,-135],[-29,-31],[-48,-197],[-67,-214],[3,-156]],[[5292,3771],[-31,69],[-22,145],[74,124],[6,94],[-11,111],[43,49],[8,103],[71,77],[72,27]],[[5502,4570],[35,-12],[28,-99],[66,-20],[23,-43],[55,8],[26,-104],[49,-21],[31,-58],[52,20],[14,77],[64,251],[59,112],[-29,43],[57,103],[64,-21]],[[6451,6360],[-39,-96],[-92,-97],[-9,-119],[-48,-66],[-7,-94],[34,-72],[-51,-81],[-11,-172],[-35,-112],[1,-73],[-52,-229],[-6,-89],[-29,-104],[12,-52],[-23,-98]],[[5502,4570],[25,49],[-78,60],[53,79],[-17,55]],[[5901,6199],[56,57],[-7,41],[69,73],[21,76]],[[3480,4436],[-14,-59],[-25,50],[39,9]],[[3663,5237],[16,-66],[43,-57],[27,6],[39,-79],[-47,-8],[-62,-84],[8,62],[-38,-5],[-15,70],[45,-28],[20,64],[-51,100],[-69,-65],[-7,-108],[-26,11],[28,149],[34,-26],[18,49],[37,15]],[[6488,7803],[-59,-52],[6,-87],[-40,-7],[-96,71],[-7,90],[76,56]],[[6368,7874],[68,-22],[52,-49]],[[5306,7104],[64,204]],[[6193,7910],[47,-118],[-17,-27],[43,-48],[3,-109],[-43,-19],[2,-65],[-48,-23],[-56,99],[-44,25],[27,79],[-59,46],[57,116],[23,-5],[54,71],[11,-22]],[[4732,3114],[-109,84],[-95,149],[-15,108],[6,95],[-81,231],[-23,112]],[[4415,3893],[18,16],[83,-48],[31,19],[97,-26],[33,54],[46,-9],[55,156],[24,-1],[121,153],[50,119],[29,29],[23,88]],[[6488,7803],[120,-30],[38,16],[-16,-68],[41,-120],[40,9],[34,-44],[-50,-33]],[[6077,6990],[-39,56],[-34,98],[29,35],[-12,54],[-56,56],[-25,-19],[-70,147],[23,22],[-11,87],[53,-3],[55,73],[-27,75],[-46,6],[-91,93]],[[5826,7770],[136,53],[80,185],[105,69],[54,11],[72,-67],[0,-37],[46,-65],[29,11],[20,-56]],[[4773,6169],[26,31],[59,159],[126,221]],[[4415,3893],[-4,67],[-42,81],[-104,83],[-38,57],[33,88],[34,145],[18,154],[30,78]],[[5443,7457],[46,115],[41,67],[49,36],[217,106],[30,-11]]],"transform":{"scale":[0.000785569666066603,0.0005688545404540484],"translate":[116.7062384090001,20.697301579000055]}};
+	//var topo_taiwan = {"type":"Topology","objects":{"county":{"type":"GeometryCollection","bbox":[116.7062384090001,20.697301579000055,124.56114950000006,26.385278129000085],"geometries":[{"type":"MultiPolygon","properties":{"OBJECTID":1,"Area":29735060.5483,"County_ID":"09007","C_Name":"連江縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[0]]]},{"type":"MultiPolygon","properties":{"OBJECTID":2,"Area":185005359.138,"County_ID":"09020","C_Name":"金門縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[1]],[[2]]]},{"type":"MultiPolygon","properties":{"OBJECTID":3,"Area":2201426268.76,"County_ID":"10002","C_Name":"宜蘭縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[3,4,5,6,7,8]]]},{"type":"Polygon","properties":{"OBJECTID":4,"Area":1411565106.52,"County_ID":"10004","C_Name":"新竹縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[-7,9,10,11,12,13]]},{"type":"Polygon","properties":{"OBJECTID":5,"Area":1826676683.67,"County_ID":"10005","C_Name":"苗栗縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[-11,14,15,16]]},{"type":"Polygon","properties":{"OBJECTID":6,"Area":1244549081.72,"County_ID":"10007","C_Name":"彰化縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[17,18,19,20]]},{"type":"Polygon","properties":{"OBJECTID":7,"Area":4097754662.36,"County_ID":"10008","C_Name":"南投縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[21,22,23,24,-19,25]]},{"type":"MultiPolygon","properties":{"OBJECTID":8,"Area":1399574918.65,"County_ID":"10009","C_Name":"雲林縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[26]],[[-25,27,28,-20]]]},{"type":"MultiPolygon","properties":{"OBJECTID":9,"Area":1952762204.55,"County_ID":"10010","C_Name":"嘉義縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[-24,29,30,31,-28],[32]]]},{"type":"MultiPolygon","properties":{"OBJECTID":10,"Area":2805016552.2,"County_ID":"10013","C_Name":"屏東縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[33,34,35]]]},{"type":"MultiPolygon","properties":{"OBJECTID":11,"Area":3581832603.27,"County_ID":"10014","C_Name":"臺東縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[36]],[[37]],[[38,-34,39,40]]]},{"type":"Polygon","properties":{"OBJECTID":12,"Area":4605695449.58,"County_ID":"10015","C_Name":"花蓮縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[41,-41,42,-22,43,-5]]},{"type":"MultiPolygon","properties":{"OBJECTID":13,"Area":135223749.493,"County_ID":"10016","C_Name":"澎湖縣","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[44]],[[45]]]},{"type":"MultiPolygon","properties":{"OBJECTID":14,"Area":137570190.544,"County_ID":"10017","C_Name":"基隆市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[[46,47]]]},{"type":"Polygon","properties":{"OBJECTID":15,"Area":124389934.739,"County_ID":"10018","C_Name":"新竹市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[-17,48,-12]]},{"type":"Polygon","properties":{"OBJECTID":16,"Area":59722166.0789,"County_ID":"10020","C_Name":"嘉義市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[-33]]},{"type":"Polygon","properties":{"OBJECTID":17,"Area":269847319.981,"County_ID":"63","C_Name":"臺北市","Add_Date":"1899-11-29T16:00:00.000Z","Add_Accept":null,"Remark":null},"arcs":[[49]]},{"type":"MultiPolygon","properties":{"OBJECTID":18,"Area":2995099782.37,"County_ID":"64","C_Name":"高雄市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制"},"arcs":[[[-43,-40,-36,50,51,-30,-23]]]},{"type":"Polygon","properties":{"OBJECTID":19,"Area":2066260788.66,"County_ID":"65","C_Name":"新北市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制"},"arcs":[[-47,52,-9,53,54],[-50]]},{"type":"Polygon","properties":{"OBJECTID":20,"Area":2239785479.54,"County_ID":"66","C_Name":"臺中市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制"},"arcs":[[-44,-26,-18,55,-15,-10,-6]]},{"type":"Polygon","properties":{"OBJECTID":21,"Area":2258815738.57,"County_ID":"67","C_Name":"臺南市","Add_Date":"2010-12-24T16:00:00.000Z","Add_Accept":"內政部98年9月1日台內民字第0980162925號令","Remark":"五都改制"},"arcs":[[-52,56,-31]]},{"type":"Polygon","properties":{"OBJECTID":22,"Area":1217223234.53,"County_ID":"68","C_Name":"桃園市","Add_Date":"2014-12-24T16:00:00.000Z","Add_Accept":"內政部102年5月31日台內民字第1020216023號令","Remark":"桃園升格"},"arcs":[[-54,-8,-14,57]]}]}},"arcs":[[[4087,9630],[61,-15],[-31,-42],[-40,2],[10,55]],[[1963,6607],[22,-49],[-67,-32],[21,75],[24,6]],[[2170,6740],[28,-11],[54,-126],[-25,-65],[-91,32],[-47,-28],[-35,-59],[-53,49],[31,44],[-22,65],[32,37],[66,-43],[62,105]],[[6695,7533],[-52,-24],[-94,-139],[-27,-71],[-16,-145],[44,-245],[28,-54],[-1,-116],[-39,-19],[22,-63],[-73,-85],[-36,-212]],[[6451,6360],[-124,39],[-58,58],[1,-60],[-82,-32],[-27,34],[-61,3],[-60,44]],[[6040,6446],[-18,32],[-82,-25],[-59,56],[-11,73]],[[5870,6582],[36,76],[70,77],[3,111]],[[5979,6846],[29,20],[42,123],[27,1]],[[6077,6990],[71,25],[75,89],[-3,86],[43,37],[80,13],[52,69],[40,2],[39,76],[78,45],[-11,60],[154,41]],[[5870,6582],[-75,-7]],[[5795,6575],[3,31],[-58,106],[-59,-22],[-59,12],[-66,-21],[11,76],[-23,29],[27,56],[-96,96],[-53,72],[13,38],[-52,10]],[[5383,7058],[12,58],[62,62],[51,-34],[-16,71],[-46,50],[-76,43]],[[5370,7308],[73,149]],[[5443,7457],[71,12],[27,-70],[61,-36],[62,-11],[-7,-63],[89,-76],[28,15],[22,-49],[53,-33],[-1,-121],[68,-46],[12,-114],[51,-19]],[[5795,6575],[-34,-95],[-45,22],[-36,-62],[-172,-111],[-42,61],[-84,18],[-29,-85],[-99,-8],[-34,46],[-55,17],[-89,72],[-92,130]],[[4984,6580],[54,76],[66,206],[76,106],[61,20],[65,116]],[[5306,7104],[41,4],[36,-50]],[[4773,6169],[62,-27],[52,-132],[81,-26],[22,-126],[67,-27]],[[5057,5831],[-53,-13],[11,-78],[-31,-164],[10,-65],[69,-54],[-55,-28]],[[5008,5429],[-111,27],[-55,-2],[-98,52],[-159,-16],[-66,23],[-47,58]],[[4472,5571],[48,57],[31,93],[66,109],[7,80],[56,48],[41,146],[52,65]],[[5901,6199],[10,-42],[-81,-39],[-6,-74],[59,-37],[-8,-57],[-50,-48],[-29,-108],[23,-50],[-11,-142],[-39,-77],[-14,-100],[-27,-15],[45,-115],[-7,-85],[-29,-109],[-77,-22],[-23,-127],[-84,7],[-39,-77],[17,-43],[-46,-26]],[[5485,4813],[-21,46],[-53,13]],[[5411,4872],[-58,13],[-92,-10],[-40,132],[23,70],[-18,27],[-103,18]],[[5123,5122],[-90,-1],[-39,45],[24,82],[-10,84],[19,7],[-19,90]],[[5057,5831],[88,-27],[103,127],[8,81],[23,12],[47,-48],[79,54],[51,-12],[23,52],[53,7],[56,67],[52,6],[39,51],[15,-22],[95,53],[112,-33]],[[4295,4968],[-24,-59],[-82,-42],[106,101]],[[5123,5122],[6,-71],[-81,12],[-29,27],[-90,-18],[-54,21],[-41,72],[-92,-30],[-38,14],[-144,-114],[-26,-55],[-60,-45],[-96,29]],[[4378,4964],[-8,164],[-28,21],[66,233],[-16,44],[65,95],[15,50]],[[5411,4872],[-60,-19],[-78,-66],[-29,-86],[-80,-52],[-82,-102],[-70,21],[13,-125]],[[5025,4443],[-97,-17],[-75,40],[5,131],[22,27],[-45,29],[-12,88],[-68,33],[-120,-21],[-71,-46],[-90,-138],[-41,-11],[-91,88]],[[4342,4646],[17,78],[34,-7],[-17,160],[17,40],[-48,-1],[33,48]],[[4760,4959],[-73,-35],[8,-63],[57,-41],[89,56],[-33,57],[-48,26]],[[5292,3771],[9,-49],[39,-18],[2,-54],[-25,-101],[-109,-48],[-46,-104],[-28,-138],[31,-102],[-16,-61],[49,-71],[-43,-26],[-16,-65],[53,-37],[-6,-90],[110,-113],[38,29]],[[5334,2723],[-12,-200],[18,-49],[0,-127],[-72,-83],[-3,-65],[31,-80],[-58,57],[-76,41],[-29,-70],[-37,27],[5,78],[-36,79],[40,123],[-24,78],[-18,132],[-44,69],[-17,107],[-58,92],[-167,130],[-45,52]],[[4732,3114],[-1,74],[24,87],[-7,181],[24,93],[-1,99],[18,102],[108,-4],[66,78],[50,20],[35,-49],[41,43],[47,-12],[48,-68],[57,55],[51,-42]],[[6107,2438],[81,-1],[0,-76],[45,-43],[-43,-23],[-75,79],[-8,64]],[[6091,3481],[22,1],[-1,-77],[-44,21],[-11,51],[34,4]],[[6096,4806],[-23,-66],[-19,-144],[-39,-43],[-46,-161],[24,-128],[-62,-48],[-37,-134],[-132,-274],[-59,-51],[18,-61],[-28,-65],[-64,-76],[-124,-99],[-30,-135],[-29,-31],[-48,-197],[-67,-214],[3,-156]],[[5292,3771],[-31,69],[-22,145],[74,124],[6,94],[-11,111],[43,49],[8,103],[71,77],[72,27]],[[5502,4570],[35,-12],[28,-99],[66,-20],[23,-43],[55,8],[26,-104],[49,-21],[31,-58],[52,20],[14,77],[64,251],[59,112],[-29,43],[57,103],[64,-21]],[[6451,6360],[-39,-96],[-92,-97],[-9,-119],[-48,-66],[-7,-94],[34,-72],[-51,-81],[-11,-172],[-35,-112],[1,-73],[-52,-229],[-6,-89],[-29,-104],[12,-52],[-23,-98]],[[5502,4570],[25,49],[-78,60],[53,79],[-17,55]],[[5901,6199],[56,57],[-7,41],[69,73],[21,76]],[[3480,4436],[-14,-59],[-25,50],[39,9]],[[3663,5237],[16,-66],[43,-57],[27,6],[39,-79],[-47,-8],[-62,-84],[8,62],[-38,-5],[-15,70],[45,-28],[20,64],[-51,100],[-69,-65],[-7,-108],[-26,11],[28,149],[34,-26],[18,49],[37,15]],[[6488,7803],[-59,-52],[6,-87],[-40,-7],[-96,71],[-7,90],[76,56]],[[6368,7874],[68,-22],[52,-49]],[[5306,7104],[64,204]],[[6193,7910],[47,-118],[-17,-27],[43,-48],[3,-109],[-43,-19],[2,-65],[-48,-23],[-56,99],[-44,25],[27,79],[-59,46],[57,116],[23,-5],[54,71],[11,-22]],[[4732,3114],[-109,84],[-95,149],[-15,108],[6,95],[-81,231],[-23,112]],[[4415,3893],[18,16],[83,-48],[31,19],[97,-26],[33,54],[46,-9],[55,156],[24,-1],[121,153],[50,119],[29,29],[23,88]],[[6488,7803],[120,-30],[38,16],[-16,-68],[41,-120],[40,9],[34,-44],[-50,-33]],[[6077,6990],[-39,56],[-34,98],[29,35],[-12,54],[-56,56],[-25,-19],[-70,147],[23,22],[-11,87],[53,-3],[55,73],[-27,75],[-46,6],[-91,93]],[[5826,7770],[136,53],[80,185],[105,69],[54,11],[72,-67],[0,-37],[46,-65],[29,11],[20,-56]],[[4773,6169],[26,31],[59,159],[126,221]],[[4415,3893],[-4,67],[-42,81],[-104,83],[-38,57],[33,88],[34,145],[18,154],[30,78]],[[5443,7457],[46,115],[41,67],[49,36],[217,106],[30,-11]]],"transform":{"scale":[0.000785569666066603,0.0005688545404540484],"translate":[116.7062384090001,20.697301579000055]}};
+	let topoData=topo_taiwan;
+	var projection = d3.geo.mercator().center([121.0,24.4]).scale(6000);    
+	var path = d3.geo.path().projection(projection);
+	var topo = topojson.feature(topoData, topoData.objects["county"]);
+	
+	$(container_id+" > svg").remove();
+	var selection = d3.select(container_id).append("svg")
+		.attr("width","800")
+		.attr("height","600")
+		//.attr("style","background-color:#eee")
 		.selectAll("path").data(topo.features);
 	
 	selection.enter().append("path");
@@ -155,39 +692,65 @@ function draw_map(container_id,data){
 	.attr({
 		"stroke": "#000",
 		"stroke-width": "0.3",
-		"fill": "rgba(180,180,256,0.3)"
+		"fill": "#F8F8FF"
 	});
-
-	console.log(data)
-	var colorTmp ;
-	d3.select(container_id+" > svg")
-		.selectAll("dot")
-        .data(data)
-      .enter().append("circle")
-		.attr({
-			"r":3.5,
-			"fill":function(d){
-				return d.data==1?"red":"green";
-			},
-			"class":"tip_on_map",
-			"title":function(d){
-				return "<table style='padding:8px;'>"
-						+"<tr><td>測站名稱：</td><td>"+d.name+"</td></tr>"
-						+"<tr><td>預警程度：</td><td>"+(d.data==1?"嚴重":"良好")+"</td></tr>"
-						+"</table>";
-			},
-			"cx":function(d) {
-				return projection([d.x,d.y])[0]; 
-			},
-			"cy":function(d) {
-				return projection([d.x,d.y])[1]; 
-			}
-		}).on("mouseover",function(d){
-			colorTmp = d3.select(this).attr("fill");
-			d3.select(this).attr({fill:(d3.select(this).attr("title")==""?colorTmp:"gold")});
-		}).on("mouseout",function(d){
-		   d3.select(this).attr({fill:colorTmp});
-		});
+	
+	if(data.length==0)return;
+	d3.selectAll(container_id+" path")
+            .attr({
+                title : function(d,i){
+					let retStr = "";
+					let seriousStr = "";
+					$.each(data,function(i,item){
+						if(item.city == d["properties"]["C_Name"]){
+							if(item.data >0.6){seriousStr = "嚴重";}
+							else if(item.data >0.3){seriousStr = "普通";}
+							else{seriousStr = "良好";}
+							
+							retStr =  "<table style='padding:8px;'>"
+											+"<tr><td>縣市名稱：</td><td>"+item.city+"</td></tr>"
+											+"<tr><td>嚴重程度：</td><td>"+seriousStr+"</td></tr>"
+											+"</table>";
+						}
+					});
+					return retStr;
+                },
+                "stroke": "#000",
+                "stroke-width": "0.3",
+				"fill": function(d,i){
+					let retStr = "#F8F8FF";
+                	$.each(data,function(i,item){
+						if(item.city == d["properties"]["C_Name"]){
+							console.log(item.data);
+							if(item.data >0.6){retStr = "#FE2E2E";}
+							else if(item.data >0.3){retStr = "#FFDD55";}
+							else if(item.data >=0){retStr = "#66FF66";}
+						}
+					});
+					return retStr;
+                },
+                "class" : function(d,i){
+					let retStr = "";
+                	$.each(data,function(i,item){
+						if(item.city == d["properties"]["C_Name"]){
+							retStr = "tip_on_map";
+						}
+					});
+					return retStr;
+                },
+           }).on("mouseover",function(d){
+                colorTmp = d3.select(this).attr("fill");
+                d3.select(this).attr({fill:(d3.select(this).attr("title")==""?colorTmp:"#FFFF00")});
+           }).on("mouseout",function(d){
+               d3.select(this).attr({fill:colorTmp});
+           }).on("click",function(d){
+			   $.each(data,function(i,item){
+					if(item.city == d["properties"]["C_Name"]){
+						draw_station_data(the_day,item.city,item.stationData);
+					}
+				});
+		   });
 	tooltip("tip_on_map");
 	
 }
+*/

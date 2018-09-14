@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>流量統計表</title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+	
+	<link rel="stylesheet" href="/stylesheets/common.css">
+	<style>
+	th{
+		cursor: pointer;
+	}
+	.line_blue {
+		fill: none;
+		stroke: steelblue;
+		stroke-width: 2px;
+	}
+	.search-result-wrap {
+		margin-bottom: 10px;
+	}
+	
+	#tooltip{
+        position:absolute;
+        border:1px solid #333;
+        background:#f7f5d1;
+        color:#333;
+        display:none;
+		line-height:20px;
+        z-index:10010;
+        min-width:180px; 
+		word-break:keep-all;
+		padding:12px 20px;
+	}
+	#tooltip div{
+		padding:6px 12px;
+	}
+	
+	#daily_flow td:nth-child(2){
+		text-align:right;
+	}
+	.title{
+		font-size:1.5em;
+		margin-bottom:6px;
+	}
+	
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<a href="/">主目錄</a>
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'>流量統計表</span>
+			</div>
+			<div class="form-row" style=''>
+				<label for="">
+					<span class="block-label">起日</span>
+					<input type="text" id='from_time' class="input-date">
+				</label>
+				<div class="forward-mark"></div>
+				<label for="">
+					<span class="block-label">迄日</span>
+					<input type="text" id='till_time' class="input-date">
+				</label>
+			</div>
+			<div class="form-row" style=''>
+				<font style='font-size:1.5em;'>資料時間戳:<script>document.write(new Date(new Date().getTime()+8*3600*1000).toISOString().replace("T"," ").split(".")[0]);</script></font>
+			</div>
+			<div class="form-row">	
+			</div>
+		</div><!-- /.form-wrap -->
+	</div><!-- /.input-field-wrap -->
+
+	<div class="search-result-wrap">
+		<table style="margin:auto;">
+			<tr>
+				<td valign="top">
+					<div id="daily_flow" style="text-align:center;"></div>
+				</td><td>
+					<div id="chart_container" style="text-align:center;"></div>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<div id="statistic_div" style="text-align:center;"></div>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+<script type="text/javascript" src="/javascripts/d3.v4.min.js"></script>
+<script type="text/javascript" src="/javascripts/common.js"></script>
+<script>
+
+function fetch_daily_data(){
+	let query_line_view_para = {
+		db_name : "line_prod_cloudantDB",
+		table_name : "lineapi_log",
+		view_name : "getFlows"
+	};
+	
+	query_view(query_line_view_para,function(result){
+		console.log(result);
+		data_to_draw = result.map(function(item,i){
+			return {
+				"日期":formatDayStr(item.key).split(" ")[0],
+				"人次":item.value
+			};
+		});
+		$("#daily_flow").html("<div class='title'>分日人次</div>"+plain_table(data_to_draw));
+	});
+}
+
+function fetch_and_draw(){
+	let query_line_view_para = {
+		db_name : "line_prod_cloudantDB",
+		table_name : "lineapi_log",
+		view_name : "getHourFlows"
+	};
+	
+	query_view(query_line_view_para,function(result){
+		console.log(result);
+		let from_time = new Date($("#from_time").val());
+		let till_time = new Date($("#till_time").val());
+		till_time.setDate(new Date(till_time).getDate()+1);
+		result = result.filter(function(item){
+			let time = item.key;
+			if( from_time.getTime() <= time && till_time.getTime() > time ){return true;}
+		});
+		
+		let hour_flow_data = result.map(function(item,i){
+			return {
+				"-":i+1,
+				"時間":new Date(item.key+8*3600*1000).toISOString().replace("T"," ").split(".")[0],
+				"人次":item.value
+			}
+		})
+		$("#statistic_div").html("<div class='title'>分時人次</div>"+plain_table(hour_flow_data));
+		$(".search-result-wrap").show();
+		
+		let data_to_draw = result.map(function(item,i){
+			return{
+				"key":item.key,
+				"value":item.value,
+				"time":formatDayStr(item.key)
+			}
+		});
+		draw_line_chart(data_to_draw);
+	});
+}
+
+
+function formatDayStr(timestamp){
+	return new Date(timestamp+8*3600*1000).toISOString().replace("T"," ").split(".")[0];
+}
+
+$(function(){
+	$(".input-date").datepicker("setDate", new Date());
+	fetch_and_draw();
+	fetch_daily_data();
+	$(".input-date").change(function(e){
+		fetch_and_draw();
+	});
+});
+function draw_line_chart(jsonDataLine){
+	$("#chart_container").empty();
+	var margin = {top: 20, right: 20, bottom: 60, left: 50},
+    width = 960 - margin.left - margin.right,
+    height = 460 - margin.top - margin.bottom;
+
+	var parseTime = d3.timeParse("%Y-%m-%d %H:%M:%S");
+
+	var x = d3.scaleTime().range([0, width]);
+	var y = d3.scaleLinear().range([height, 0]);
+
+	var valueline = d3.line()
+		.x(function(d) { return x(d.time); })
+		.y(function(d) { return y(d.value); })
+		.curve(d3.curveCardinal);
+
+	var svg = d3.select("#chart_container").append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+	  .append("g")
+		.attr("transform",
+			  "translate(" + margin.left + "," + margin.top + ")");
+
+	// format the data
+	jsonDataLine.forEach(function(d) {
+	  d.time = parseTime(d.time);
+	  d.value = +d.value;
+	});
+
+	// Scale the range of the data
+	
+	x.domain(d3.extent(jsonDataLine, function(d) { return d.time; }));
+	y.domain([0, d3.max(jsonDataLine, function(d) { return d.value; })]);
+
+	// Add the valueline path.
+	svg.append("path")
+	  .data([jsonDataLine])
+	  .attr("class", "line_blue")
+	  .attr("d", valueline);
+	
+	  
+	let biggest_day = jsonDataLine.reduce(function(time,item){
+		return item.key > time?item.key:time;
+	},0);
+	let smallest_day = jsonDataLine.reduce(function(time,item){
+		return item.key < time?item.key:time;
+	},10000000000000);
+	let xAxis_scale;
+	if(biggest_day-smallest_day < 24*60*60*1000){
+		xAxis_scale = d3.axisBottom(x).ticks(12).tickFormat(d3.timeFormat("%m/%d %H時"))
+	}else if(biggest_day-smallest_day > 7*24*60*60*1000){
+		xAxis_scale = d3.axisBottom(x).ticks(12).tickFormat(d3.timeFormat("%Y-%m-%d"))
+	}else{
+		xAxis_scale = d3.axisBottom(x).tickFormat(d3.timeFormat("%m/%d %H"))
+	}
+	svg.append("g")
+	  .attr("transform", "translate(0," + height + ")")
+	  .call(xAxis_scale)
+	  .selectAll("text")	
+		.style("text-anchor", "end")
+		.attr("dx", "-.8em")
+		.attr("dy", ".15em")
+		.attr("transform", "rotate(-35)");
+	  //.call(xAxis);
+	  
+	// Add the Y Axis
+	svg.append("g")
+	  .call(d3.axisLeft(y));
+	svg.append("g").selectAll("circle")
+		.data(jsonDataLine)
+		.enter()
+		.append("circle")
+		.attr("cx",function(d) {return x(d.time);})
+		.attr("cy",function(d) {return y(d.value);})
+		.attr("r" , 6)
+		.attr("fill", "rgba(238,102,0,0.2)")
+		.attr("newtitle" , function(data){
+			return "平台: LINE<br>"
+					+"時間: "+formatDayStr(data.key)+"<br>"
+					+"流量: "+data.value;
+		})
+		.attr("class","tips");
+	  
+	tooltip("tips");
+}
+
+function tooltip(clas){
+	
+	$("."+clas).css("z-index","2").mouseover(function(e){
+		var tooltip = "<div id='tooltip' style='padding:5px;'><div style:'margin:0 auto;'>"+ $(this).attr("newTitle") +"</div><\/div>";
+		$("body").append(tooltip);
+		$("#tooltip").css({"top": (e.pageY+20) + "px","left": (e.pageX+10)  + "px"}).show();//"fast");
+	 }).mouseout(function(){
+		 //$(this).attr("title",$(this).attr("newTitle"));
+	     $("#tooltip").remove();
+	 }).mousemove(function(e){
+		 if(e.pageX+420 > +window.innerWidth){
+			 $("#tooltip").css({"top": (e.pageY+20) + "px","left": (e.pageX-10-(240))  + "px"});
+		 }else{
+	     	$("#tooltip").css({"top": (e.pageY-20) + "px","left": (e.pageX+10)  + "px"});
+		 }
+	 });
+}
+</script>
+</body>
+</html>

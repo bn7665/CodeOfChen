@@ -1,4 +1,4 @@
 cd LineProd02Backstage
-bluemix api https://api.ng.bluemix.net
-bluemix login -u DANAYU@mail.hotaimotor.com.tw -o DANAYU@mail.hotaimotor.com.tw -s dev
+bluemix login -a api.ng.bluemix.net -u GRACECHIU@mail.hotaimotor.com.tw -p hT03251108 -o DANAYU@mail.hotaimotor.com.tw -s dev
 bluemix app push LineProd02Backstage
+

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>不重複訊息</title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+	
+	<link rel="stylesheet" href="/stylesheets/common.css">
+	<style>
+	th{
+		cursor: pointer;
+	}
+	td{
+		text-align:right;
+	}
+	td:nth-child(2),td:nth-child(4){
+		text-align:left;
+	}
+	td:nth-child(2){
+		word-break: break-all;
+		width:600px;
+	}
+	
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<div style='height:0px;'>
+		<a href="/">主目錄</a>
+		</div>
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'>不重複訊息</span>
+			</div>
+			<div class="form-row">	
+			</div>
+		</div><!-- /.form-wrap -->
+	</div><!-- /.input-field-wrap -->
+
+	<div class="search-result-wrap" style="display:none;" >
+		<div class="result-table-func-wrap" >
+		</div>
+		<div id="table_container"></div>
+	</div>
+</div>
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+<script type="text/javascript" src="/javascripts/common.js"></script>
+<script>
+
+function fetch_and_draw(){
+	loading();
+	let query_view_para = {
+		db_name : "line_prod_cloudantDB",
+		table_name : "lineapi_log",
+		view_name : "getDistinctMessage"
+	};
+	query_view( query_view_para, function(jsonData){
+		console.log(jsonData);
+		let dataArr = jsonData ;
+		dataArr.sort(function(a,b){
+			if(a.value[0]>b.value[0]){
+				return -1;
+			}else if(a.value[0]<b.value[0]){
+				return 1;
+			}else{
+				return 0;
+			}
+		});
+		
+		let outputArr = dataArr.map(function(item,i){	
+			return {
+				"-":i+1,
+				"句子":item.key,
+				"共出現次數":item.value[1],
+				"最後一次出現時間":item.value[0],
+			};
+		});
+		
+		$("#table_container").html(plain_table(outputArr));
+		$(".search-result-wrap").show();
+		
+		loading('over');
+	});
+}
+
+$(function(){
+	fetch_and_draw();
+});
+
+</script>
+</body>
+</html>

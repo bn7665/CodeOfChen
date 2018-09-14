@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>對話查詢</title>
+	
+	<link rel="stylesheet" href="/stylesheets/jquery-ui.min.css">
+	<link rel="stylesheet" href="/stylesheets/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="/stylesheets/styles.css">
+	
+	<link rel="stylesheet" href="/stylesheets/common.css">
+	<style>
+	th{
+		cursor: pointer;
+		word-break: keep-all;
+	}
+	td{
+		min-width:40px;
+		padding:6px 8px;
+		text-align:right;
+	}
+	#table_container_who,#table_container_who td:nth-child(1){
+		word-break: keep-all;
+	}
+	#table_container_who td:nth-child(2){
+		word-break: break-all;
+		max-width:300px;
+		text-align:left;
+	}
+	
+	</style>
+</head>
+<body>
+<div class="page-wrapper">
+	<div class="input-field-wrap">
+		<div style='height:0px;'>
+			<a href="/line_messages">區間查對話</a><br><br>
+			<a href="/flows">流量統計表</a><br><br>
+			<a href="/error_check">錯誤紀錄表</a><br><br>
+			<a href="/duplicate">不重複對話</a><br><br>
+			<a href="/response_time">ResponseTime</a>
+		</div>
+		<div class="form-wrap">
+			<div class="form-row">
+				<span class='my-title'>對話查詢</span><br>
+			</div>
+			<div class="form-row">
+				<label for="">
+					<span class="block-label">對話內容查詢</span>
+					<input id="text" type="text">
+				</label>
+				<button class="btn btn-darkblue" id="find_conversation" onclick="get_conversation_id()">查詢</button>
+			</div>
+			<div class="form-row"></div>
+		</div>
+	</div>
+
+	<div class="search-result-wrap" style="display:none;" >
+		<table style=''><tr><td valign='top'>
+			<div id="table_container_who"></div>
+		</td><td valign='top'>
+			<div id="table_container_says"></div>
+		</td></tr><table>
+	</div>
+</div>
+
+<script type="text/javascript" src="/javascripts/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/javascripts/scripts.js"></script>
+<script type="text/javascript" src="/javascripts/common.js"></script>
+<script>
+function get_conversation_id(){
+	
+	let the_text = $("#text").val();
+	if(the_text.length==0){
+		alert("至少輸入一個字");
+		return;
+	}
+	loading();
+	console.log(the_text);
+	let query_data_para = {
+		db_name : "line_prod_cloudantDB",
+		table : "lineapi_log",
+		cloudant_query: JSON.stringify({
+			"selector": {
+				"input":{
+					"$regex":the_text
+				}
+			},
+			"sort": [{
+					"time": "desc"
+				}
+			]
+		}),
+	};
+	
+	query_data( query_data_para, function(jsonData){
+		let dataArr = jsonData ;
+		console.log(jsonData);
+		
+		dataArr = dataArr.map(function(item){
+			let conversation_id = 
+				item.watson_assistant_out &&
+				item.watson_assistant_out.context &&
+				item.watson_assistant_out.context.conversation_id 
+			?item.watson_assistant_out.context.conversation_id:"UNKNOWN";
+			return conversation_id;
+		});
+		dataArr = dataArr.filter(function(item){
+			if(item==""){
+				return false;
+			}else{
+				return true;
+			}
+		})
+		
+		let data = dataArr.map(function(item){
+			return {"conversation_id": (item=="UNKNOWN"?"UNKNOWN":"<a href='#' onclick='get_conversation(\""+item+"\");'>"+item+"</a>")};
+		});
+		
+		$("#table_container_who").html("這 "+data.length+" 個人說過: '"+the_text+"'<br>"+plain_table(data));
+		loading('over');
+		
+	});
+	return ;
+	
+	data = data.filter(function(item){
+		if(item.message.indexOf(the_text)!=-1){
+			return true;
+		}else{
+			return false;
+		}
+	});
+	
+	
+}
+
+function get_conversation(the_conversation_id){
+	if(the_conversation_id=="UNKNOWN"){
+		alert("未知使用者無法查詢對話，未知原因可能有二<br>1. 9/5改版前之對話格式不同<br>2.未進watson將不紀錄");
+		return;
+	}
+	loading();
+	console.log(the_conversation_id);
+	let query_data_para = {
+		db_name : "line_prod_cloudantDB",
+		table : "lineapi_log",
+		cloudant_query: JSON.stringify({
+			"selector": {
+				"watson_assistant_out":{
+					"context":{
+						"conversation_id":{
+							"$eq":the_conversation_id
+						}
+					}
+				}
+			},
+			"sort": [{
+					"time": "asc"
+				}
+			]
+		}),
+	};
+	query_data( query_data_para, function(jsonData){
+		let dataArr = jsonData ;
+		console.log(jsonData);
+		dataArr.sort(function(a,b){
+			return a.timestamp-b.timestamp;
+		});
+		console.log(dataArr);
+		dataArr = dataArr.map(function(item,i){
+			console.log(i);
+			let conversation_id = 
+				item.watson_assistant_out &&
+				item.watson_assistant_out.context &&
+				item.watson_assistant_out.context.conversation_id 
+			?item.watson_assistant_out.context.conversation_id:"";
+			let intentStr = 
+						item.watson_assistant_out &&
+						item.watson_assistant_out.intents &&
+						item.watson_assistant_out.intents[0]
+						?(
+							"#"+item.watson_assistant_out.intents[0].intent+"<br> "
+							 +"("+(item.watson_assistant_out.intents[0].confidence+"").substring(0,5)+")"
+						):"";
+			let entityStr = 
+					item.watson_assistant_out &&
+					item.watson_assistant_out.entities &&
+					item.watson_assistant_out.entities[0]
+					?(
+						item.watson_assistant_out.entities.map(function(e_item){
+							return "@"+e_item.entity+(e_item.value?":"+e_item.value:"");
+						}).join("<br>")
+					):"";
+			return {
+				"人": conversation_id,
+				"說了": item.input,
+				"得到回答": item.outputStr,
+				"得到intent": intentStr,
+				"得到entity": entityStr,
+				"時間": item.time,
+			};
+		});
+		console.log(dataArr);
+		
+		$("#table_container_says").html("這個人: '"+the_conversation_id+"' 說了這些話<br>"+plain_table(dataArr));
+		loading('over');
+	});
+}
+
+$(function(){
+	$(".search-result-wrap").show();
+	
+	$('#text').keypress(function (e) {
+	  if (e.which == 13) {
+		get_conversation_id();
+	  }
+	});
+});
+
+</script>
+</body>
+</html>

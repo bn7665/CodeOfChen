@@ -1,0 +1,45 @@
+Watson assistant
+Natural Language Understanding
+Discovery
+Language Translator
+Natural Language Classifier
+TTS
+STT
+Personality sight
+Tone Analyzer
+Visual Recognition
+10+4
+
+ 1. Discovery : Unlock hidden value in data to find answers, monitor trends
+    and surface patterns with the world’s most advanced cloud-native insight
+    engine.
+ 2. Knowledge Catalog : Discover, catalog, and securely share enterprise data.
+ 3. Knowledge Studio : Build custom models to teach Watson the language of
+    your domain.
+ 4. Language Translator : Translate text from one language to another, adapt
+    translation models to your custom domain.
+ 5. Machine Learning : IBM Watson Machine Learning - make smarter decisions,
+    solve tough problems, and improve user outcomes.
+ 6. Natural Language Classifier : Natural Language Classifier performs natural
+    language classification on question texts. A user would be able to train
+    their data and the predict the appropriate class for a input question.
+ 7. Natural Language Understanding : Analyze text to extract meta-data from
+    content such as concepts, entities, emotion, relations, sentiment and more.
+ 8. Personality Insights : The Watson Personality Insights derives insights
+    from transactional and social media data to identify psychological traits
+ 9. Speech to Text : Low-latency, streaming transcription
+10. Text to Speech : Synthesizes natural-sounding speech from text.
+11. Tone Analyzer : Tone Analyzer uses linguistic analysis to detect three
+    types of tones from communications: emotion, social, and language.  This
+    insight can then be used to drive high impact communications.
+12. Visual Recognition : Find meaning in visual content! Analyze images for
+    scenes, objects, faces, and other content. Choose a default model off the
+    shelf, or create your own custom classifier. Develop smart applications
+    that analyze the visual content of images or video frames to understand
+    what is happening in a scene.
+13. Watson Assistant (formerly Conversation) : Add a natural language
+    interface to your application to automate interactions with your end users.
+    Common applications include virtual agents and chat bots that can integrate
+    and communicate on any channel or device.
+14. Watson Studio : Embed AI and machine learning into your business. Create
+    custom models using your own data.

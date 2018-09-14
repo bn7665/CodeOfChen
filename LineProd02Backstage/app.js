@@ -5,15 +5,16 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var index = require('./routes/index');
-var users = require('./routes/users');
-
 var query_data = require('./routes/query_data');
 var query_view = require('./routes/query_view');
 
-var lineManageWeb = require('./routes/line_manage_web');
+var find_conversation = require('./routes/find_conversation');
+var line_messages = require('./routes/line_messages');
+var flows = require('./routes/flows');
+var error_check = require('./routes/error_check');
+var duplicate = require('./routes/duplicate');
 var response_time = require('./routes/response_time');
-var response_time_ytff = require('./routes/response_time_ytff');
+
 var app = express();
 
 // view engine setup
@@ -28,12 +29,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', lineManageWeb);
-app.use('/users', users);
+app.use('/', find_conversation);
+app.use('/line_messages', line_messages);
+app.use('/flows', flows);
+app.use('/error_check', error_check);
+app.use('/duplicate', duplicate);
+app.use('/response_time', response_time);
+
+//app.use('/users', users);
 app.use('/query_data', query_data);
 app.use('/query_view', query_view);
-app.use('/response_time', response_time);
-app.use('/response_time_ytff', response_time_ytff);
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');

@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="/stylesheets/styles.css">
 	
 	<link rel="stylesheet" href="/stylesheets/common.css">
+	<script type="text/javascript" src="/javascripts/off-line-query-data.js"></script>
 	<style>
 	th{
 		cursor: pointer;
@@ -64,7 +65,7 @@
 <script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="/javascripts/scripts.js"></script>
 <script type="text/javascript" src="/javascripts/common.js"></script>
-<script type="text/javascript" src="/javascripts/off-line-query-data.js"></script>
+
 <script>
 function get_conversation_id(){
 	
@@ -118,9 +119,24 @@ function get_conversation(the_conversation_id){
 	$("#table_container_says").html("這個人: '"+the_conversation_id+"' 說了這些話<br>"+plain_table(data));
 	loading('over');
 }
-
+function check_data_ready(){
+	if(window.all_query_data==null){
+		setTimeout(function() {
+			check_data_ready();
+		}, 1000);
+	}else{
+		$(".search-result-wrap").show();
+		loading('over');
+	}
+}
 $(function(){
-	$(".search-result-wrap").show();
+	loading();
+	check_data_ready();
+	$('#text').keypress(function (e) {
+	  if (e.which == 13) {
+		get_conversation_id();
+	  }
+	});
 });
 
 </script>

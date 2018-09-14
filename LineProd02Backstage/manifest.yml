@@ -3,4 +3,4 @@ applications:
   memory: 512M
   instances: 1
   name: LineProd02Backstage
-  disk_quota: 1G
+  disk_quota: 512M
