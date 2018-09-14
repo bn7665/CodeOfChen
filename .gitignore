@@ -3,7 +3,10 @@ configs.js
 package-lock.json
 cmd.txt
 Private*
+<<<<<<< HEAD
 FB_history_format.js 
+=======
+>>>>>>> dab72c3ac7cec5fb768d5addf66b19a6db6e7746
 # Logs
 logs
 *.log

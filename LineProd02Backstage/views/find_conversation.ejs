@@ -39,7 +39,11 @@
 			<a href="/flows">流量統計表</a><br><br>
 			<a href="/error_check">錯誤紀錄表</a><br><br>
 			<a href="/duplicate">不重複對話</a><br><br>
+<<<<<<< HEAD
 			<a href="/response_time">ResponseTime</a>
+=======
+			<a href="/response_time">千則訊息ResponseTime</a>
+>>>>>>> dab72c3ac7cec5fb768d5addf66b19a6db6e7746
 		</div>
 		<div class="form-wrap">
 			<div class="form-row">
@@ -70,9 +74,17 @@
 <script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="/javascripts/scripts.js"></script>
 <script type="text/javascript" src="/javascripts/common.js"></script>
+<<<<<<< HEAD
 <script>
 function get_conversation_id(){
 	
+=======
+<script type="text/javascript" src="/javascripts/off-line-query-data.js"></script>
+<script>
+function get_conversation_id(){
+	
+	let data = all_query_data;
+>>>>>>> dab72c3ac7cec5fb768d5addf66b19a6db6e7746
 	let the_text = $("#text").val();
 	if(the_text.length==0){
 		alert("至少輸入一個字");

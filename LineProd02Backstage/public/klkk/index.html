@@ -73,9 +73,17 @@
 <script type="text/javascript" src="/javascripts/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="/javascripts/scripts.js"></script>
 <script type="text/javascript" src="/javascripts/common.js"></script>
+<<<<<<< HEAD
 <script>
 function get_conversation_id(){
 	
+=======
+<script type="text/javascript" src="/javascripts/off-line-query-data.js"></script>
+<script>
+function get_conversation_id(){
+	
+	let data = all_query_data;
+>>>>>>> dab72c3ac7cec5fb768d5addf66b19a6db6e7746
 	let the_text = $("#text").val();
 	if(the_text.length==0){
 		alert("至少輸入一個字");
